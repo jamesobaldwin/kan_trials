@@ -18,7 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 agent = [
-    "clearml-agent>=1.9.2",
+    "clearml-agent==1.9.3rc0",
     "setuptools>=75.6.0",
 ]
 

@@ -155,7 +155,7 @@ wheels = [
 
 [[package]]
 name = "clearml-agent"
-version = "1.9.2"
+version = "1.9.3rc0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -168,12 +168,13 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "pyyaml" },
     { name = "requests" },
+    { name = "setuptools", marker = "python_full_version >= '3.12'" },
     { name = "six" },
     { name = "urllib3" },
     { name = "virtualenv" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d2/3b/b7f5c7114cce8d4c528cd6745cac8cba9e32f8c6ad1c2e573e790accb63d/clearml_agent-1.9.2-py3-none-any.whl", hash = "sha256:34326db107a43f71246cfa0952d99288368bdebb40ef5a9606ad942d326841ab", size = 438972 },
+    { url = "https://files.pythonhosted.org/packages/69/0f/f09df0d07f8fd2dde99915ad40d35897bd6efdce9658b0f888321b992db4/clearml_agent-1.9.3rc0-py3-none-any.whl", hash = "sha256:6b51455bf7e96d4431de08759cf6c9d9836ac950aa8dc5ddea1db3a33f8764d0", size = 442543 },
 ]
 
 [[package]]
@@ -533,7 +534,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "clearml", specifier = ">=1.17.0" },
-    { name = "clearml-agent", marker = "extra == 'agent'", specifier = ">=1.9.2" },
+    { name = "clearml-agent", marker = "extra == 'agent'", specifier = "==1.9.3rc0" },
     { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "numpy", specifier = ">=2.2.1" },
     { name = "optuna", specifier = ">=4.1.0" },

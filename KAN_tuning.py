@@ -197,7 +197,7 @@ def create_train_test_sets(N: int = 100, lr: float = 1e-5):
 
 
 def run_trial(
-    hidden_layers: List[int],
+    hidden_layers: List[List[int]],
     input_size: int = 4,
     output_size: int = 3,
     grid: int = 5,
@@ -206,7 +206,7 @@ def run_trial(
 ) -> str:
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = KAN(
-        width=[input_size, hidden_layers, output_size],
+        width=[input_size, *hidden_layers, output_size],
         grid=grid,
         k=k,
         seed=seed,

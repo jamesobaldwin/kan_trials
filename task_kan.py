@@ -8,7 +8,7 @@ task = Task.init(
 )
 
 params = {
-    'hidden_layers': [3,0],
+    'hidden_layers': [[3,0]],
 }
 params = task.connect(params)
 hidden_layers = params.get('hidden_layers')

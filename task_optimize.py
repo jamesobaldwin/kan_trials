@@ -17,7 +17,7 @@ def job_complete_callback(
 
 # Connecting CLEARML
 task = Task.init(
-   project_name='kan_tuning',
+   project_name='kan_hpo',
    task_name='test_tune',
    task_type=Task.TaskTypes.optimizer,
    reuse_last_task_id=False
@@ -35,7 +35,7 @@ if not args['template_task_id']:
     args['template_task_id'] = Task.get_task(
         project_name='kan_tuning', task_name='test_task').id
 
-hidden_layer_vals = [[3,0], [3,3], [1,3]]
+hidden_layer_vals = {[[3,0]], [[3,3]], [[1,3]]}
 
 an_optimizer = HyperParameterOptimizer(
     # This is the experiment we want to optimize
@@ -51,7 +51,7 @@ an_optimizer = HyperParameterOptimizer(
     max_number_of_concurrent_tasks=3,
     optimizer_class=OptimizerOptuna, # input optuna as search strategy
     execution_queue='default',
-    total_max_jobs=10,
+    total_max_jobs=3,
     max_iteration_per_job=100,
 )
 
@@ -75,6 +75,9 @@ an_optimizer.wait()
 # optimization is completed, print the top performing experiments id
 top_exp = an_optimizer.get_top_experiments(top_k=3)
 print([t.id for t in top_exp])
+
+for i, t in enumerate(top_exp):
+    task.upload_artifact(f'op_{i}', t.get_parameters_as_dict().get('General'))    
 # make sure background optimization stopped
 an_optimizer.stop()
 
