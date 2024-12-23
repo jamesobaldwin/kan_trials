@@ -1,0 +1,30 @@
+[project]
+name = "kans"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "clearml>=1.17.0",
+    "matplotlib>=3.10.0",
+    "numpy>=2.2.1",
+    "optuna>=4.1.0",
+    "pandas>=2.2.3",
+    "pykan>=0.2.8",
+    "scikit-learn>=1.6.0",
+    "torch>=2.5.1",
+    "tqdm>=4.67.1",
+]
+
+[project.optional-dependencies]
+agent = [
+    "clearml-agent>=1.9.2",
+    "setuptools>=75.6.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=24.10.0",
+    "ipython>=8.31.0",
+    "isort>=5.13.2",
+]
