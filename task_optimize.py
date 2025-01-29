@@ -1,3 +1,5 @@
+import json
+
 from clearml import Task
 from clearml.automation import (
     DiscreteParameterRange, HyperParameterOptimizer, UniformIntegerParameterRange
@@ -35,7 +37,8 @@ if not args['template_task_id']:
     args['template_task_id'] = Task.get_task(
         project_name='kan_tuning', task_name='test_task').id
 
-hidden_layer_vals = {[[3,0]], [[3,3]], [[1,3]]}
+hidden_layer_vals = [[[3,0]], [[3,3]], [[1,3]]]
+hidden_layer_vals = [json.dumps(v) for v in hidden_layer_vals]
 
 an_optimizer = HyperParameterOptimizer(
     # This is the experiment we want to optimize

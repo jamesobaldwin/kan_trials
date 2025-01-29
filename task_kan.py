@@ -1,3 +1,5 @@
+import json
+
 from clearml import Task
 from KAN_tuning import run_trial
 
@@ -8,10 +10,12 @@ task = Task.init(
 )
 
 params = {
-    'hidden_layers': [[3,0]],
+    'hidden_layers': '[[3,0]]',
 }
 params = task.connect(params)
 hidden_layers = params.get('hidden_layers')
+if type(hidden_layers)==str:
+    hidden_layers=json.loads(hidden_layers)
 o = run_trial(hidden_layers=hidden_layers)
 print(o)
 

@@ -18,20 +18,29 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
 
+def CoM(data):
+    '''
+    Function to calculate the true center of gravity of
+    a set of points
+    '''
+    masses = data[:, 3]
+    x_cog = np.sum(data[:, 0] * masses) / np.sum(masses)
+    y_cog = np.sum(data[:, 1] * masses) / np.sum(masses)
+    z_cog = np.sum(data[:, 2] * masses) / np.sum(masses)
+    
+    return np.array([x_cog, y_cog, z_cog])
+
 class KANModel(nn.Module):
-    def __init__(self):
+    def __init__(self, model1, model2):
         super(KANModel, self).__init__()
-        self.layer1 = KAN(width=[4, [3, 3], 8], grid=5, k=3)
-        self.layer2 = KAN(width=[8, 3, 3], grid=10, k=3)
+        self.layer1 = model1
+        self.layer2 = model2
 
     def forward(self, point_set):
-        # print("point_set shape:", point_set.shape)  # Debugging line
         layer1_out = self.layer1(
             point_set
         )  # output shape (n, 8) where n is number of points in set
-        # print("layer1_out shape:", layer1_out.shape)
         agg_out = torch.mean(layer1_out, dim=0).unsqueeze(0)  # shape (1,8)
-        # print("agg_out shape:", agg_out.shape)
         output = self.layer2(agg_out).squeeze(
             0
         )  # shape (3) representing (x,y,z) of vector
@@ -40,12 +49,15 @@ class KANModel(nn.Module):
 
 # training loop for DeepSets MLP model
 def train_KAN_model(
-    X_set, y_set, num_epochs: int = 10, lr: float = 1e-5, verbose: bool = False
+    X_set,
+    y_set,
+    num_epochs: int = 10,
+    lr: float = 1e-5,
+    verbose: bool = False,
+    **kwargs
 ):
 
-    # print('Creating KANModel...')
-    model = KANModel()
-    # print('KANModel created')
+    model = get_kan_ds(**kwargs)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -161,9 +173,9 @@ def create_test_sets(N: int = 1000):
     return test_sets
 
 
-def create_test_sets(N: int = 1000):
+def get_test_sets(N: int = 1000):
     center = np.array([0.5, 0.5, 0.5])
-    test_sets = create_test_sets(N=1000)
+    test_sets = create_test_sets(N=N)
     test_targets = np.array(
         [(CoM(test_sets[i]) - center) for i in range(len(test_sets))]
     )
@@ -174,16 +186,15 @@ def create_test_sets(N: int = 1000):
     return test_tensors, test_targets_tensor
 
 
-def create_train_test_sets(N: int = 100, lr: float = 1e-5):
+def get_train_sets(N: int = 100):
     N_sets = 100
-    learning_rate = 1e-5
+    center = np.array([0.5, 0.5, 0.5])
     point_sets = create_sets(N=N_sets)
     ps_targets = np.array(
         [(CoM(point_sets[i]) - center) for i in range(len(point_sets))]
     )
-    # print(f'shape of ps_targets: {np.shape(ps_targets)}')
     scaler = MinMaxScaler(feature_range=(-1, 1))
-    targets_scaled = ds_scaler.fit_transform(ps_targets)
+    targets_scaled = scaler.fit_transform(ps_targets)
     point_sets_tensor = [
         torch.tensor(point_sets[i], dtype=torch.float32)
         for i in np.arange(len(point_sets))
@@ -196,7 +207,7 @@ def create_train_test_sets(N: int = 100, lr: float = 1e-5):
     return scaler, point_sets_tensor, ps_target_tensor
 
 
-def run_trial(
+def init_model(
     hidden_layers: List[List[int]],
     input_size: int = 4,
     output_size: int = 3,
@@ -204,7 +215,7 @@ def run_trial(
     k: int = 3,
     seed: int = 42,
 ) -> str:
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = KAN(
         width=[input_size, *hidden_layers, output_size],
         grid=grid,
@@ -212,9 +223,64 @@ def run_trial(
         seed=seed,
         device=device,
     )
-    return model.__repr__()
+    return model
+
+
+def run_trial(**kwargs):
+    return init_model(**kwargs).__repr__()
+
+
+def get_kan_ds(
+    hidden_layers1: List[List[int]],
+    hidden_layers2: List[List[int]],
+    grid1: int = 5,
+    grid2: int = 10,
+    input_size: int = 4,
+    shared_size: int = 5,
+    output_size: int = 3,
+    **kwargs,
+):
+    model1_args = kwargs.copy()
+    model1_args.update(
+        {
+            "input_size": input_size,
+            "output_size": shared_size,
+            "hidden_layers": hidden_layers1,
+            "grid": grid1,
+        }
+    )
+    model2_args = kwargs.copy()
+    model2_args.update(
+        {
+            "input_size": shared_size,
+            "output_size": output_size,
+            "hidden_layers": hidden_layers2,
+            "grid": grid2,
+        }
+    )
+    model1 = init_model(**model1_args)
+    model2 = init_model(**model2_args)
+    kanModel = KANModel(model1, model2)
+    return kanModel
+
+
+def run_trial2(**kwargs):
+    # model = get_kan_ds(**kwargs)
+    scaler, X_train, y_train = get_train_sets()
+    X_test, y_test = get_test_sets()
+    kanModel, losses = train_KAN_model(X_train, y_train, **kwargs)
+    
+    return kanModel.__repr__()
 
 
 if __name__ == "__main__":
-    o = run_trial(hidden_layers=[3, 0])
+    o = run_trial2(
+        hidden_layers1=[[1, 3]],
+        hidden_layers2=[[3, 3]],
+        grid1=5,
+        grid2=10,
+        input_size=4,
+        shared_size=5,
+        output_size=3,
+    )
     print(o)
