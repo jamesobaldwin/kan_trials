@@ -1,12 +1,17 @@
 import numpy as np
 import torch
 from sklearn.preprocessing import MinMaxScaler
-from clearml import Task, Dataset
+from clearml import Task
 import joblib
-import pickle
 
-task = Task.init(project_name="KAN deep set optimization", task_name="data generation")
-dataset = Dataset.create(dataset_name="train_test_data", dataset_project="KAN deep set optimization")
+
+def init_task(project_name: str, task_name: str) -> Task:
+    """Initialize ClearML task"""
+    task = Task.init(
+        project_name=project_name, task_name=task_name
+    )
+    
+    return task
 
 # helper function for creating datasets
 def CoM(data):
@@ -46,7 +51,7 @@ def create_sets(lower: int=200, upper: int=1000, N: int=1000, random_state: int=
         for _ in range(N)
     ]
     
-    return point_sets
+    return point_sets  # a list of numpy arrays, length N, where each array in the list is variable size [n, 4]
 
 def create_targets(point_sets, scale: bool=True):
     center = np.array([0.5,0.5,0.5])
@@ -58,34 +63,40 @@ def create_targets(point_sets, scale: bool=True):
         return ps_targets
     return scaler, targets
 
-# generate and save training data
-point_sets = create_sets(N=1000)
-scaler, targets = create_targets(point_sets)
+def generate_train_test_data() -> dict:
+    
+    point_sets = create_sets()
+    scaler, targets = create_targets(point_sets)
+    test_sets = create_sets(lower=1000, upper=1001, N=1000)
+    test_targets = create_targets(test_sets, scale=False)
 
-ps_tensor = [torch.tensor(point_sets[i], dtype=torch.float32) for i in np.arange(len(point_sets))]
-target_tensor = [torch.tensor(targets[i], dtype=torch.float32) for i in np.arange(len(targets))]
+    # create the artifacts dictionary
+    train_test_data = {
+        "X_train": point_sets,
+        "y_train": targets,
+        "X_test": test_sets,
+        "y_test": test_targets,
+        "scaler": scaler,
+    }
 
-# Save training data using pickle
-with open("X_train.pkl", "wb") as f:
-    pickle.dump(ps_tensor, f)
-np.save("y_train.npy", target_tensor)
-joblib.dump(scaler, "scaler.pkl")
+    return train_test_data
 
-# generate and save test data
-test_sets = create_sets(lower=1000, upper=1001, N=1000)
-targets = create_targets(test_sets, scale=False)
+def save_artifacts(task: Task, artifacts: dict):
+    task.upload_artifacts("train_test_data", artifacts)
 
-test_tensor = [torch.tensor(test_sets[i], dtype=torch.float32) for i in np.arange(len(test_sets))]
+def main():
 
-np.save("X_test.npy", test_tensor)
-np.save("y_test.npy", targets)
+    # create the ClearML task 
+    task = init_task(project_name="KAN deep set optimization", task_name="data generation")
 
-# upload to clearML
-dataset.add_files("X_train.pkl")
-dataset.add_files("X_test.npy")
-dataset.add_files("y_train.npy")
-dataset.add_files("y_test.npy")
-dataset.add_files("scaler.pkl")
-dataset.upload()
-dataset.finalize()
-task.close()
+    # store the training, test, and scalar object data in a dictionary
+    train_test_data = generate_train_test_data()
+
+    # upload artifacts to ClearML servers
+    save_artifacts(task, train_test_data)
+
+    # close the task
+    task.close()
+
+if __name__ == "__main__":
+    main()
