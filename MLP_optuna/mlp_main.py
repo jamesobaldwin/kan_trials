@@ -215,7 +215,7 @@ def run():
 
     # Define experiment configuration dictionary
     config = {
-        "input_size": X_train[0].shape[1],  # Assuming each point set has shape (1000,4)
+        "input_size": X_train[0].numel(),  # Assuming each point set has shape (1000,4)
         "init_size": None,  # This will be set by Optuna
         "phi_depth": None,  # This will be set by Optuna
         "rho_depth": None,  # This will be set by Optuna
