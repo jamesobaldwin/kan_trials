@@ -228,7 +228,7 @@ def run():
     }
 
     # Create Optuna study
-    study = optuna.create_study(direction="minimize", sampler=optuna.TPESampler())
+    study = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler())
 
     # Optimize the objective function
     study.optimize(lambda trial: objective(trial, task, config), n_trials=100)
