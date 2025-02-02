@@ -169,7 +169,7 @@ def test(model, test_tensor, scaler):
     return np.array(predictions)
     
 
-def objective(trial, task: Task) -> float:
+def objective(trial, task, X_train, y_train, X_test, y_test, scaler) -> float:
     
     # training hyperparams
     optimizer_type = trial.suggest_categorical("optimizer", ["Adam", "AdamW", "SGD", "Ranger"])
@@ -223,7 +223,7 @@ def objective(trial, task: Task) -> float:
     # Return the test MAE as the objective value
     return test_mse
 
-def run():
+def run(params: dict):
     # Initialize ClearML task
     task = Task.init(project_name="MLP Optimization", task_name="Optuna Optimization")
 
@@ -238,7 +238,7 @@ def run():
     study = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler())
 
     # Optimize the objective function
-    study.optimize(lambda trial: objective(trial, task), n_trials=100)
+    study.optimize(lambda trial: objective(trial, task, X_train, y_train, X_test, y_test, scaler), n_trials=params["optuna_trials"])
 
     # Log best trial results
     best_trial = study.best_trial
