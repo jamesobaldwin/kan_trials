@@ -14,7 +14,8 @@ def retrieve_best_hyperparams():
 
 def run_experiment(N, best_params, task):
     """ Train MLP model on dataset of size N using best hyperparameters and log results. """
-
+    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    
     # generate train and test sets for N
     X_train, X_test = generate_train_test_sets(N)
     scaler = MinMaxScaler(feature_range=(-1,1))
@@ -47,7 +48,7 @@ def run_experiment(N, best_params, task):
         optimizer_type=best_params["optimizer"],
         momentum=best_params.get("momentum", 0.9),  # Only relevant for SGD
         verbose=True
-    )
+    ).to(device)
 
     # generate predictions
     model.eval()

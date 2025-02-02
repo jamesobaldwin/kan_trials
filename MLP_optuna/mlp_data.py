@@ -8,7 +8,7 @@ import joblib
 def init_task(project_name: str, task_name: str) -> Task:
     """Initialize ClearML task"""
     task = Task.init(
-        project_name=project_name, task_name=task_name, script_path="MLP_optuna/mlp_data.py"
+        project_name=project_name, task_name=task_name
     )
     
     return task

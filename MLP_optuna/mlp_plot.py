@@ -74,7 +74,7 @@ def plot_results(y_test, preds, learning_rate):
 
 def run(optuna_task_id):
     """ ClearML Task for Plotting Predictions vs Ground Truth """
-    task = Task.init(project_name="MLP Optimization", task_name="Plot Results")
+    task = Task.init(project_name="MLP Optimization", task_name="Plot Results", script_path="MLP_optuna/mlp_plot.py")
 
     # retrieve stored predictions and y_test from the Optuna Controller task
     preds, y_test, lr = load_artifacts()

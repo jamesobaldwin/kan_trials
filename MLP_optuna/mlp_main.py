@@ -152,7 +152,7 @@ def trainMLP(trial, config, lr, weight_decay, optimizer_type, momentum, verbose)
 
 
 def test(model, test_tensor, scaler):
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")  # ✅ Fix here
+    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     model.eval()
     predictions = []
     with torch.no_grad():
