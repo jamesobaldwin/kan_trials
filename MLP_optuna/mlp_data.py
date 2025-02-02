@@ -8,7 +8,7 @@ import joblib
 def init_task(project_name: str, task_name: str) -> Task:
     """Initialize ClearML task"""
     task = Task.init(
-        project_name=project_name, task_name=task_name
+        project_name=project_name, task_name=task_name, script_path="MLP_optuna/mlp_data.py"
     )
     
     return task
@@ -26,7 +26,7 @@ def CoM(data) -> np.ndarray:
     
     return np.array([x_cog, y_cog, z_cog])
 
-def generate_train_test_sets(n: int=1000, N: int=1000, random_state: int=42) -> tuple[List[np.ndarray], List[np.ndarray]]:
+def generate_train_test_sets(n: int=1000, N: int=1000, random_state: int=42) -> tuple[list[np.ndarray], list[np.ndarray]]:
     '''
     n (int): number of point sets
     N (int): number of points in each set
