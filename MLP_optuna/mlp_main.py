@@ -17,17 +17,18 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
         "optuna_trials": 300,
         "num_epochs": 1000,
         "use_mps_gpu": True,
+        "data_task_id": "aea0e01e9762410fb9acefccc549d893",
     }
 
     return task, params
 
 
-def retrieve_data() -> dict[str, any]:
+def retrieve_data(task_id) -> dict[str, any]:
     """
     grab the training and test data created in mlp_data.py
     """
     data_task = Task.get_task(
-        project_name="MLP Optimization", task_name="data generation"
+        task_id=task_id
     )
     train_test_data = data_task.artifacts["train_test_data"].get()
 
@@ -173,7 +174,7 @@ def objective(trial, task, X_train, y_train, X_test, y_test, scaler) -> float:
     
     # training hyperparams
     optimizer_type = trial.suggest_categorical("optimizer", ["Adam", "AdamW", "SGD", "Ranger"])
-    lr = trial.suggest_loguniform("lr", 1e-5, 1e-2)
+    lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
     weight_decay = trial.suggest_loguniform("weight_decay", 1e-6, 1e-2)
     momentum = trial.suggest_float("momentum", 0.5, 0.99) if optimizer_type == "SGD" else None
     
@@ -256,7 +257,7 @@ def main():
     task, params = init_task(project_name='MLP Optimization', task_name='optuna controller')
 
     # retrieve train and test data from mlp_data.py task
-    train_test_data = retrieve_data()
+    train_test_data = retrieve_data(params["data_task_id"])
 
     # upack and store data, converting necessary data to tensors
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
