@@ -162,7 +162,7 @@ def test(model, test_tensor, scaler):
     return np.array(predictions)
     
 
-def objective(trial: optuna.Trial, task: Task, config: dict) -> float:
+def objective(trial, task: Task, config: dict) -> float:
     
     # training hyperparams
     optimizer_type = trial.suggest_categorical("optimizer", ["Adam", "AdamW", "SGD", "Ranger"])
