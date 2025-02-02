@@ -179,6 +179,9 @@ def objective(trial, task: Task, config: dict) -> float:
     
     # architecture hyperparams
     init_size = trial.suggest_categorical("init_size", [128, 256, 512, 1024])
+    print(f"DEBUG: Optuna suggested init_size = {init_size}")
+    assert isinstance(init_size, int), f"Error: init_size is {init_size}, expected int"
+
     phi_depth = trial.suggest_int("phi_depth", 0, 4)
     rho_depth = trial.suggest_int("rho_depth", 0, 4)
 
@@ -215,6 +218,9 @@ def run():
     # Load or generate data
     train_test_data = retrieve_data()
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
+
+    print(f"DEBUG: X_train[0].shape = {X_train[0].shape}")
+    print(f"DEBUG: X_train[0].numel() = {X_train[0].numel()}")
 
     # Define experiment configuration dictionary
     config = {
