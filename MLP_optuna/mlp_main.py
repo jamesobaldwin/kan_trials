@@ -107,7 +107,7 @@ class MLPModel(nn.Module):
         out = self.mlp_relu_stack(x)
         return out.squeeze(0)   # output shape [3,]
 
-def trainMLP(trial, config, lr, weight_decay, optimizer_type, momentum, verbose):
+def trainMLP(trial, config, verbose):
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     
     model = MLPModel(
@@ -120,14 +120,14 @@ def trainMLP(trial, config, lr, weight_decay, optimizer_type, momentum, verbose)
     criterion = nn.MSELoss()
 
     # Select optimizer
-    if optimizer_type == "Adam":
-        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    elif optimizer_type == "AdamW":
-        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
-    elif optimizer_type == "SGD":
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
-    elif optimizer_type == "Ranger":
-        optimizer = Ranger(model.parameters(), lr=lr, weight_decay=weight_decay)
+    if config["optimizer_type"] == "Adam":
+        optimizer = optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
+    elif config["optimizer_type"] == "AdamW":
+        optimizer = optim.AdamW(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
+    elif config["optimizer_type"] == "SGD":
+        optimizer = optim.SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"], weight_decay=config["weight_decay"])
+    elif config["optimizer_type"] == "Ranger":
+        optimizer = Ranger(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
 
     mlp_losses = []
     
@@ -185,16 +185,28 @@ def objective(trial, task: Task, config: dict) -> float:
     phi_depth = trial.suggest_int("phi_depth", 0, 4)
     rho_depth = trial.suggest_int("rho_depth", 0, 4)
 
+    config = {
+        "input_size": X_train[0].numel(),
+        "init_size": init_size,
+        "phi_depth": phi_depth,
+        "rho_depth": rho_depth,
+        "num_epochs": 300,
+        "X_train": X_train,
+        "y_train": y_train,
+        "X_test": X_test,
+        "y_test": y_test,
+        "scaler": scaler,
+        "optimizer_type": optimizer_type,
+        "lr": lr,
+        "weight_decay": weight_decay,
+        "momentum": momentum
+    }
     
 
     try:
         model, losses = trainMLP(
             trial=trial,
             config=config,  # Pass dictionary instead of many arguments
-            lr=lr,
-            weight_decay=weight_decay,
-            optimizer_type=optimizer_type,
-            momentum=momentum,
             verbose=False
         )
     except optuna.TrialPruned:
@@ -221,20 +233,6 @@ def run():
 
     print(f"DEBUG: X_train[0].shape = {X_train[0].shape}")
     print(f"DEBUG: X_train[0].numel() = {X_train[0].numel()}")
-
-    # Define experiment configuration dictionary
-    config = {
-        "input_size": X_train[0].numel(),  # Assuming each point set has shape (1000,4)
-        "init_size": None,  # This will be set by Optuna
-        "phi_depth": None,  # This will be set by Optuna
-        "rho_depth": None,  # This will be set by Optuna
-        "num_epochs": 300,
-        "X_train": X_train,
-        "y_train": y_train,
-        "X_test": X_test,
-        "y_test": y_test,
-        "scaler": scaler
-    }
 
     # Create Optuna study
     study = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler())
