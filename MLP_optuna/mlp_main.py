@@ -20,6 +20,8 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
         "data_task_id": "aea0e01e9762410fb9acefccc549d893",
     }
 
+    params = task.connect(params)
+    
     return task, params
 
 
