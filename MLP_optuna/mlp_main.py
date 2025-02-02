@@ -242,7 +242,7 @@ def run():
 def main():
 
     # initialize the task
-    task, params = init_task(project_name='MLP optimization', task_name='optuna controller')
+    task, params = init_task(project_name='MLP Optimization', task_name='optuna controller')
 
     # retrieve train and test data from mlp_data.py task
     train_test_data = retrieve_data()

@@ -77,7 +77,7 @@ def save_artifacts(task: Task, artifacts: dict):
 def main():
 
     # create the ClearML task 
-    task = init_task(project_name="MLP optimization", task_name="data generation")
+    task = init_task(project_name="MLP Optimization", task_name="data generation")
 
     # store the training, test, and scalar object data in a dictionary
     train_test_data = generate_train_test_data()
