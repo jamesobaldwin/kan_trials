@@ -169,7 +169,7 @@ def test(model, test_tensor, scaler):
     return np.array(predictions)
     
 
-def objective(trial, task: Task, config: dict) -> float:
+def objective(trial, task: Task) -> float:
     
     # training hyperparams
     optimizer_type = trial.suggest_categorical("optimizer", ["Adam", "AdamW", "SGD", "Ranger"])
@@ -238,7 +238,7 @@ def run():
     study = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler())
 
     # Optimize the objective function
-    study.optimize(lambda trial: objective(trial, task, config), n_trials=100)
+    study.optimize(lambda trial: objective(trial, task), n_trials=100)
 
     # Log best trial results
     best_trial = study.best_trial
