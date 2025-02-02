@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 import torch.nn as nn 
 
-def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, Any]]:
+def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     task = Task.init(project_name=project_name, task_name=task_name)
 
     params = {
@@ -18,7 +18,7 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, Any]]:
     return task, params
 
 
-def retrieve_data() -> dict[str, Any]:
+def retrieve_data() -> dict[str, any]:
     """
     grab the training and test data created in mlp_data.py
     """
