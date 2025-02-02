@@ -1,5 +1,7 @@
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.optim as optim
 from clearml import Task
 from mlp_main import trainMLP
 from mlp_plot import plot_results
