@@ -72,7 +72,7 @@ def generate_train_test_data() -> dict:
     return train_test_data
 
 def save_artifacts(task: Task, artifacts: dict):
-    task.upload_artifacts("train_test_data", artifacts)
+    task.upload_artifact("train_test_data", artifacts)
 
 def main():
 

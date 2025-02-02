@@ -61,9 +61,9 @@ def unpack_and_convert(
 
 # save artifacts for use in plotting final model
 def save_artifacts(task: Task, preds: np.ndarray, y_test: np.ndarray, lr: float):
-    task.upload_artifacts("preds", preds)
-    task.upload_artifacts("y_test", y_test)
-    task.upload_artifacts("lr", lr)
+    task.upload_artifact("preds", preds)
+    task.upload_artifact("y_test", y_test)
+    task.upload_artifact("lr", lr)
 
 def create_layers(input_size: int, init_size: int, phi_depth: int, rho_depth: int):
 
