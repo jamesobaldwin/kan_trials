@@ -8,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 def retrieve_best_hyperparams():
     """ Retrieve the best hyperparameters from the Optuna Controller task. """
-    optuna_task = Task.get_task(project_name="MLP Optimization", task_name="Optuna Controller")
+    optuna_task = Task.get_task(project_name="MLP Optimization", task_name="optuna controller")
     best_params = optuna_task.get_reported_scalars()["best_hyperparams"]
     return best_params
 
@@ -66,7 +66,7 @@ def run_experiment(N, best_params, task):
 
 def run(optuna_task_id):
     """ Runs final training experiments for different N values using best Optuna hyperparameters. """
-    task = Task.init(project_name="MLP Optimization", task_name="Final Training Runs")
+    task = Task.init(project_name="MLP Optimization", task_name="final training")
 
     # retrieve best hyperparameters
     best_params = retrieve_best_hyperparams()

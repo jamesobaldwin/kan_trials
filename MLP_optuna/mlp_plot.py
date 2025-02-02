@@ -7,7 +7,7 @@ from scipy.stats import linregress
 
 def load_artifacts():
     """ Retrieve test targets and predictions from the ClearML Optuna Controller Task. """
-    optuna_task = Task.get_task(project_name="MLP Optimization", task_name="Optuna Controller")
+    optuna_task = Task.get_task(project_name="MLP Optimization", task_name="optuna controller")
 
     preds = optuna_task.artifacts["preds"].get()
     y_test = optuna_task.artifacts["y_test"].get()
@@ -74,7 +74,7 @@ def plot_results(y_test, preds, learning_rate):
 
 def run(optuna_task_id):
     """ ClearML Task for Plotting Predictions vs Ground Truth """
-    task = Task.init(project_name="MLP Optimization", task_name="Plot Results", script_path="MLP_optuna/mlp_plot.py")
+    task = Task.init(project_name="MLP Optimization", task_name="plot results", script_path="MLP_optuna/mlp_plot.py")
 
     # retrieve stored predictions and y_test from the Optuna Controller task
     preds, y_test, lr = load_artifacts()

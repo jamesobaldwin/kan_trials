@@ -23,7 +23,7 @@ def retrieve_data() -> dict[str, any]:
     grab the training and test data created in mlp_data.py
     """
     data_task = Task.get_task(
-        project_name="MLP optimization", task_name="data generation"
+        project_name="MLP Optimization", task_name="data generation"
     )
     train_test_data = data_task.artifacts["train_test_data"].get()
 
