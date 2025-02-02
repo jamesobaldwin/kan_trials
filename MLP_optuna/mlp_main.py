@@ -32,9 +32,7 @@ def retrieve_data() -> dict[str, any]:
 
 def unpack_and_convert(
     train_test_data: dict,
-) -> tuple[
-    torch.Tensor, torch.Tensor, torch.Tensor, np.ndarray, np.ndarray, MinMaxScaler
-]:
+):
     """
     Return the object of train test data, with X_train, y_train, and X_test converted to tensors
     """
