@@ -262,7 +262,7 @@ def main():
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
 
     # run optuna
-    run()
+    run(params)
         
 if __name__ == "__main__":
     main()
