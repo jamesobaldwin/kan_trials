@@ -69,6 +69,9 @@ def save_artifacts(task: Task, preds: np.ndarray, y_test: np.ndarray, lr: float)
 
 def create_layers(input_size: int, init_size: int, phi_depth: int, rho_depth: int):
 
+    assert isinstance(input_size, int), f"Error: input_size is {input_size}, expected int"
+    assert isinstance(init_size, int), f"Error: init_size is {init_size}, expected int"
+    
     layers = [nn.Linear(input_size, init_size), nn.ReLU()]
     
     # Construct phi hidden layers with increasing size
