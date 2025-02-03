@@ -24,15 +24,32 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     return task, params
 
 
+# def retrieve_data(task_id) -> dict[str, any]:
+#     """
+#     grab the training and test data created in mlp_data.py
+#     """
+#     data_task = Task.get_task(
+#         task_id=task_id
+#     )
+#     train_test_data = data_task.artifacts["train_test_data"].get()
+
+#     return train_test_data
 def retrieve_data(task_id) -> dict[str, any]:
     """
-    grab the training and test data created in mlp_data.py
+    Grab the training and test data created in mlp_data.py.
     """
-    data_task = Task.get_task(
-        task_id=task_id
-    )
-    train_test_data = data_task.artifacts["train_test_data"].get()
-
+    data_task = Task.get_task(task_id=task_id)
+    
+    # Get the artifact object
+    artifact = data_task.artifacts["train_test_data"]
+    
+    # Get the local copy path of the artifact
+    local_path = artifact.get_local_copy()
+    
+    # Load the dictionary from the pickle file
+    with open(local_path, "rb") as f:
+        train_test_data = pickle.load(f)
+    
     return train_test_data
 
 
@@ -165,7 +182,7 @@ def test(model, test_tensor, scaler):
 def main():
 
     # initialize the task
-    task, params = init_task(project_name='MLP Optimization', task_name='optuna controller')
+    task, params = init_task(project_name='MLP Optimization', task_name='Optuna Controller')
 
     logger = task.get_logger()
 
