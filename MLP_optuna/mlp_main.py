@@ -12,11 +12,10 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     task = Task.init(project_name=project_name, task_name=task_name)
 
     params = {
-        "num_point_sets": 1000,
-        "num_points_per_set": 1000,
-        "optuna_trials": 300,
-        "num_epochs": 1000,
-        "use_mps_gpu": True,
+        "num_point_sets": 50,
+        "num_points_per_set": 250,
+        "num_epochs": 10,
+        "use_mps_gpu": Falses,
         "data_task_id": "aea0e01e9762410fb9acefccc549d893",
     }
 
