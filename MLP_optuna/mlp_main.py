@@ -140,7 +140,7 @@ def trainMLP(config, logger, verbose):
         avg_epoch_loss = total_loss / len(config["X_train"])
         mlp_losses.append(avg_epoch_loss)
 
-        logger.report_scalar(title="avg_epoch_loss", iteration=epoch, value=avg_epoch_loss)
+        logger.report_scalar(title="avg_epoch_loss", series='losses', iteration=epoch, value=avg_epoch_loss)
 
         if verbose and (epoch + 1) % (0.1 * config["num_epochs"]) == 0:
             print(f"Epoch [{epoch + 1}/{config['num_epochs']}], Loss: {avg_epoch_loss:.4e}")
