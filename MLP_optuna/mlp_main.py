@@ -181,7 +181,7 @@ def main():
         "init_size": 512,
         "phi_depth": 2,
         "rho_depth": 3,
-        "num_epochs": params['num_spochs'],
+        "num_epochs": params['num_epochs'],
         "X_train": X_train,
         "y_train": y_train,
         "X_test": X_test,
