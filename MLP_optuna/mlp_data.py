@@ -5,13 +5,20 @@ from clearml import Task
 import joblib
 
 
-def init_task(project_name: str, task_name: str) -> Task:
+def init_task(project_name: str, task_name: str) -> tuple[Task, dict['str', any]]:
     """Initialize ClearML task"""
     task = Task.init(
         project_name=project_name, task_name=task_name
     )
+
+    params = {
+        "num_sets": 50,
+        "num_points": 250,
+    }
+
+    params = task.connect(params)
     
-    return task
+    return task, params
 
 # helper function for creating datasets
 def CoM(data) -> np.ndarray:
@@ -77,10 +84,10 @@ def save_artifacts(task: Task, artifacts: dict):
 def main():
 
     # create the ClearML task 
-    task = init_task(project_name="MLP Optimization", task_name="data generation")
+    task, params = init_task(project_name="MLP Optimization", task_name="data generation")
 
     # store the training, test, and scalar object data in a dictionary
-    train_test_data = generate_train_test_data()
+    train_test_data = generate_train_test_data(n=params['num_sets'], N=params['num_points'])
 
     # upload artifacts to ClearML servers
     save_artifacts(task, train_test_data)
