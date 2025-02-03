@@ -61,9 +61,9 @@ def create_targets(point_sets, scale: bool=True):
         return ps_targets
     return scaler, targets
 
-def generate_train_test_data() -> dict:
+def generate_train_test_data(params: dict) -> dict:
     
-    X_train, X_test = generate_train_test_sets()
+    X_train, X_test = generate_train_test_sets(n=params['num_sets'], N=params['num_points'])
     scaler, y_train = create_targets(X_train)
     y_test = create_targets(X_test, scale=False)
 
@@ -87,7 +87,7 @@ def main():
     task, params = init_task(project_name="MLP Optimization", task_name="data generation")
 
     # store the training, test, and scalar object data in a dictionary
-    train_test_data = generate_train_test_data(n=params['num_sets'], N=params['num_points'])
+    train_test_data = generate_train_test_data(params)
 
     # upload artifacts to ClearML servers
     save_artifacts(task, train_test_data)
