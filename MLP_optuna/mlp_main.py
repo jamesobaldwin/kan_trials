@@ -15,7 +15,7 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
         "num_point_sets": 50,
         "num_points_per_set": 250,
         "num_epochs": 10,
-        "use_mps_gpu": Falses,
+        "use_mps_gpu": False,
         "data_task_id": "aea0e01e9762410fb9acefccc549d893",
     }
 
