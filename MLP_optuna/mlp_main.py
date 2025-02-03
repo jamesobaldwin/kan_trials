@@ -110,8 +110,9 @@ class MLPModel(nn.Module):
         out = self.mlp_relu_stack(x)
         return out.squeeze(0)   # output shape [3,]
 
-def trainMLP(trial, config, verbose):
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+def trainMLP(config, logger, verbose):
+    
+    device = torch.device("cuda" if torch.cuda() else "cpu")
     
     model = MLPModel(
         input_size=config["input_size"], 
@@ -120,18 +121,9 @@ def trainMLP(trial, config, verbose):
         rho_depth=config["rho_depth"]
     ).to(device)
 
+    optimizer = optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
     criterion = nn.MSELoss()
-
-    # Select optimizer
-    if config["optimizer_type"] == "Adam":
-        optimizer = optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
-    elif config["optimizer_type"] == "AdamW":
-        optimizer = optim.AdamW(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
-    elif config["optimizer_type"] == "SGD":
-        optimizer = optim.SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"], weight_decay=config["weight_decay"])
-    elif config["optimizer_type"] == "Ranger":
-        optimizer = Ranger(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
-
+    
     mlp_losses = []
     
     for epoch in range(config["num_epochs"]):
@@ -149,7 +141,7 @@ def trainMLP(trial, config, verbose):
         avg_epoch_loss = total_loss / len(config["X_train"])
         mlp_losses.append(avg_epoch_loss)
 
-        trial.report(avg_epoch_loss, epoch)
+        logger.report_scalar(avg_epoch_loss, epoch) # task.report_scaler
         if trial.should_prune():
             raise optuna.TrialPruned()
 
@@ -160,7 +152,7 @@ def trainMLP(trial, config, verbose):
 
 
 def test(model, test_tensor, scaler):
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda() else "cpu")
     model.eval()
     predictions = []
     with torch.no_grad():
@@ -169,103 +161,47 @@ def test(model, test_tensor, scaler):
             output = scaler.inverse_transform(output.cpu().numpy().reshape(1, -1)).squeeze()
             predictions.append(output)
 
-    return np.array(predictions)
-    
+    test_mse = mean_squared_error(test_tensor, predictions)
 
-def objective(trial, task, X_train, y_train, X_test, y_test, scaler) -> float:
-    
-    # training hyperparams
-    optimizer_type = trial.suggest_categorical("optimizer", ["Adam", "AdamW", "SGD", "Ranger"])
-    lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
-    weight_decay = trial.suggest_loguniform("weight_decay", 1e-6, 1e-2)
-    momentum = trial.suggest_float("momentum", 0.5, 0.99) if optimizer_type == "SGD" else None
-    
-    # architecture hyperparams
-    init_size = trial.suggest_categorical("init_size", [128, 256, 512, 1024])
-    print(f"DEBUG: Optuna suggested init_size = {init_size}")
-    assert isinstance(init_size, int), f"Error: init_size is {init_size}, expected int"
-
-    phi_depth = trial.suggest_int("phi_depth", 0, 4)
-    rho_depth = trial.suggest_int("rho_depth", 0, 4)
-
-    config = {
-        "input_size": X_train[0].numel(),
-        "init_size": init_size,
-        "phi_depth": phi_depth,
-        "rho_depth": rho_depth,
-        "num_epochs": 300,
-        "X_train": X_train,
-        "y_train": y_train,
-        "X_test": X_test,
-        "y_test": y_test,
-        "scaler": scaler,
-        "optimizer_type": optimizer_type,
-        "lr": lr,
-        "weight_decay": weight_decay,
-        "momentum": momentum
-    }
-    
-
-    try:
-        model, losses = trainMLP(
-            trial=trial,
-            config=config,  # Pass dictionary instead of many arguments
-            verbose=False
-        )
-    except optuna.TrialPruned:
-        raise  # Stop trial early if necessary
-
-    # Evaluate the model on the test set
-    predictions = test(model, config["X_test"], config["scaler"])
-    save_artifacts(task, predictions, config['y_test'], lr)
-    
-    # Calculate the MSE for optimization
-    test_mse = mean_squared_error(config["y_test"], predictions)
-
-
-    # Return the test MAE as the objective value
-    return test_mse
-
-def run(params: dict):
-    # Initialize ClearML task
-    task = Task.init(project_name="MLP Optimization", task_name="Optuna Optimization")
-
-    # Load or generate data
-    train_test_data = retrieve_data()
-    X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
-
-    print(f"DEBUG: X_train[0].shape = {X_train[0].shape}")
-    print(f"DEBUG: X_train[0].numel() = {X_train[0].numel()}")
-
-    # Create Optuna study
-    study = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler())
-
-    # Optimize the objective function
-    study.optimize(lambda trial: objective(trial, task, X_train, y_train, X_test, y_test, scaler), n_trials=params["optuna_trials"])
-
-    # Log best trial results
-    best_trial = study.best_trial
-    print(f"Best trial: {best_trial.number}")
-    print(f"Best hyperparameters: {best_trial.params}")
-    print(f"Best validation loss: {best_trial.value}")
-
-    # Finalize ClearML task
-    task.close()
-
+    return np.array(predictions), test_mse
 
 def main():
 
     # initialize the task
     task, params = init_task(project_name='MLP Optimization', task_name='optuna controller')
 
-    # retrieve train and test data from mlp_data.py task
-    train_test_data = retrieve_data(params["data_task_id"])
+    logger = task.get_logger()
 
-    # upack and store data, converting necessary data to tensors
+    # retrieve training and test data
+    train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
 
-    # run optuna
-    run(params)
+    config = {
+        "input_size": X_train[0].numel(),
+        "init_size": init_size,
+        "phi_depth": phi_depth,
+        "rho_depth": rho_depth,
+        "num_epochs": params['num_spochs'],
+        "X_train": X_train,
+        "y_train": y_train,
+        "X_test": X_test,
+        "y_test": y_test,
+        "scaler": scaler,
+        "lr": 1e-5,
+        "weight_decay": 1e-2,        
+    }
+
+    # perform the training and log the results
+    model, losses = trainMLP(
+        config=config,  # Pass dictionary instead of many arguments
+        logger,
+        verbose=False
+    )
+
+    # test the model and report the results
+    preds, test_mse = test(model, y_train, scaler)
+    task.upload_artifact("preds", preds)
+    logger.report_scalar(test_mse)
         
 if __name__ == "__main__":
     main()
