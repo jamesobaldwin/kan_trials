@@ -112,7 +112,7 @@ class MLPModel(nn.Module):
 
 def trainMLP(config, logger, verbose):
     
-    device = torch.device("cuda" if torch.cuda() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     model = MLPModel(
         input_size=config["input_size"], 
@@ -152,7 +152,7 @@ def trainMLP(config, logger, verbose):
 
 
 def test(model, test_tensor, scaler):
-    device = torch.device("cuda" if torch.cuda() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
     predictions = []
     with torch.no_grad():
