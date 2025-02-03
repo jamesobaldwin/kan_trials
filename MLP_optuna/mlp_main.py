@@ -194,7 +194,7 @@ def main():
     # perform the training and log the results
     model, losses = trainMLP(
         config=config,  # Pass dictionary instead of many arguments
-        logger,
+        logger=logger,
         verbose=False
     )
 
