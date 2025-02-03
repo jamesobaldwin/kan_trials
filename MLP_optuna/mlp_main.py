@@ -178,9 +178,9 @@ def main():
 
     config = {
         "input_size": X_train[0].numel(),
-        "init_size": init_size,
-        "phi_depth": phi_depth,
-        "rho_depth": rho_depth,
+        "init_size": 512,
+        "phi_depth": 2,
+        "rho_depth": 3,
         "num_epochs": params['num_spochs'],
         "X_train": X_train,
         "y_train": y_train,
