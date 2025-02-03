@@ -7,6 +7,7 @@ import torch.optim as optim
 from clearml import Task
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
+import pickle
 
 def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     task = Task.init(project_name=project_name, task_name=task_name)
