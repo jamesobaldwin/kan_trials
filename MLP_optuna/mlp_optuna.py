@@ -72,6 +72,7 @@ def main():
             DiscreteParameterRange("General/momentum", values=[0.5, 0.7, 0.9])  # Only applies to SGD
         ],
         objective_metric_title= "test_mse",
+        objective_metric_series= "test_mse",
         objective_metric_sign= "min",  # We want to minimize Test MSE
         max_number_of_concurrent_tasks=100,
         optimizer_class=aSearchStrategy,
