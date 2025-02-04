@@ -40,14 +40,17 @@ def generate_train_test_sets(n: int=1000, N: int=1000, random_state: int=42) -> 
     '''
     train_set = np.random.rand(n, N, 4)
     test_set = np.random.rand(n, N, 4)
+    print(f"DEBUG: shape of train_set: {np.shape(train_set)}")
 
     # split along second axis to create list of n (N, 1, 4) arrays
     train_set_list = np.split(train_set, N, axis=1)
     test_set_list = np.split(test_set, N, axis=1)
+    print(f"DEBUG: shape of train_set_list after split: {np.shape(train_set_list)}")
 
     # collapse the second dimension; left with list of n (N, 4) arrays
     train_set_list = [arr.squeeze(axis=1) for arr in train_set_list]
     test_set_list = [arr.squeeze(axis=1) for arr in test_set_list]
+    print(f"DEBUG: shape of train_set_list after collapse: {np.shape(train_set_list)}")
     
     return train_set_list, test_set_list
     
