@@ -194,7 +194,7 @@ def main():
     train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
 
-    print(f"DEBUG: shape of X_train[0]: {X_train[0]}") 
+    print(f"DEBUG: shape of X_train[0]: {np.shape(X_train[0])}") 
 
     config = {
         "input_size": X_train[0].numel(),
