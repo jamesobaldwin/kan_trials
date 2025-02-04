@@ -123,7 +123,7 @@ class MLPModel(nn.Module):
         self.mlp_relu_stack = create_layers(input_size=input_size, init_size=init_size, phi_depth=phi_depth, rho_depth=rho_depth)
 
     def forward(self, x):
-        x = x.view(1,-1)  # flatten input to shape [1,4000]
+        x = x.view(1,-1)  # flatten input to shape [1,input_size]
         out = self.mlp_relu_stack(x)
         return out.squeeze(0)   # output shape [3,]
 
@@ -193,6 +193,8 @@ def main():
     # retrieve training and test data
     train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
+
+    print(f"DEBUG: shape of X_train[0]: {X_train[0]}") 
 
     config = {
         "input_size": X_train[0].numel(),
