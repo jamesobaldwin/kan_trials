@@ -124,6 +124,7 @@ class MLPModel(nn.Module):
 
     def forward(self, x):
         x = x.view(1,-1)  # flatten input to shape [1,input_size]
+        print(f"DEBUG: shape of x: {np.shape(x)}")
         out = self.mlp_relu_stack(x)
         return out.squeeze(0)   # output shape [3,]
 
