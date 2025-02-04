@@ -79,7 +79,7 @@ def main():
         execution_queue=execution_queue,
         total_max_jobs=300,  # Limit the number of trials
         max_iteration_per_job=30,
-        time_limit_per_job=10.0,  # Each job runs for max 10 minutes
+        time_limit_per_job=30.0,  # Each job runs for max 10 minutes
         pool_period_min=1,  # Check every 1 minute (can be increased)
     )
     
