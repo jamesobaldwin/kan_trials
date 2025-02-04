@@ -174,8 +174,10 @@ def test(model, test_tensor, scaler):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
     predictions = []
+    print("DEBUG: entering prediction loop...")
     with torch.no_grad():
         for point_set in test_tensor:
+            print(f"DEBUG: shape of point_set: {np.shape(point_set)}")
             output = model(point_set.to(device))
             output = scaler.inverse_transform(output.cpu().numpy().reshape(1, -1)).squeeze()
             predictions.append(output)
@@ -218,7 +220,7 @@ def main():
     model, losses = trainMLP(
         config=config,  # Pass dictionary instead of many arguments
         logger=logger,
-        verbose=False
+        verbose=True
     )
 
     # test the model and report the results
