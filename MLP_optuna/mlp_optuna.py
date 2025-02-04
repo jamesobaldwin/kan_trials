@@ -66,7 +66,7 @@ def main():
             DiscreteParameterRange("General/init_size", values=[128, 256, 512, 1024]),
             UniformIntegerParameterRange("General/phi_depth", min_value=1, max_value=4),
             UniformIntegerParameterRange("General/rho_depth", min_value=1, max_value=4),
-            DiscreteParameterRange("General/optimizer", values=["Adam", "AdamW", "SGD", "Ranger"]),
+            DiscreteParameterRange("General/optimizer", values=["Adam", "AdamW", "SGD"]),
             DiscreteParameterRange("General/lr", values=[1e-5, 5e-5, 1e-4, 5e-4, 1e-3]),
             DiscreteParameterRange("General/weight_decay", values=[1e-6, 1e-5, 1e-4, 1e-3]),
             DiscreteParameterRange("General/momentum", values=[0.5, 0.7, 0.9])  # Only applies to SGD
