@@ -140,8 +140,6 @@ def trainMLP(config, logger, verbose):
     elif config['optimizer'] == "SGD":
         momentum = config.get("momentum", 0.9)
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
-    elif config['optimizer'] == "Ranger":
-        optimizer = Ranger(model.parameters(), lr=lr, weight_decay=weight_decay)
     else:
         raise ValueError(f"Unknown optimizer: {optimizer_type}")
     
