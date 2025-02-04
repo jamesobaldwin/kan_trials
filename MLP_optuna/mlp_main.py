@@ -16,7 +16,7 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
         "num_point_sets": 50,
         "num_points_per_set": 250,
         "num_epochs": 10,
-        "use_mps_gpu": False,
+        
         "data_task_id": "b666a8559ac14c5e8ad142d571c0c9ba",
     }
 
@@ -219,8 +219,6 @@ def main():
         "lr": 1e-5,
         "weight_decay": 1e-2,        
     }
-
-    assert config["input_size"] == 1000, f"Expected input_size 1000, but got {config['input_size']}"
 
     # perform the training and log the results
     model, losses = trainMLP(
