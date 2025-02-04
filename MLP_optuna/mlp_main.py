@@ -138,6 +138,9 @@ def trainMLP(config, logger, verbose):
         rho_depth=config["rho_depth"]
     ).to(device)
 
+    print("Printing model")
+    print(model)
+
     optimizer = optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
     criterion = nn.MSELoss()
     
@@ -205,6 +208,8 @@ def main():
         "lr": 1e-5,
         "weight_decay": 1e-2,        
     }
+
+    assert config["input_size"] == 1000, f"Expected input_size 1000, but got {config['input_size']}"
 
     # perform the training and log the results
     model, losses = trainMLP(
