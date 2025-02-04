@@ -175,6 +175,7 @@ def test(model, test_tensor, scaler):
     model.eval()
     predictions = []
     print("DEBUG: entering prediction loop...")
+    print(f"DEBUG: shape of test_tensor: {np.shape(test_tensor)}")
     with torch.no_grad():
         for point_set in test_tensor:
             print(f"DEBUG: shape of point_set: {np.shape(point_set)}")
@@ -224,7 +225,7 @@ def main():
     )
 
     # test the model and report the results
-    preds, test_mse = test(model, y_train, scaler)
+    preds, test_mse = test(model, X_test, scaler)
     task.upload_artifact("preds", preds)
     logger.report_single_value(name="test_mse", value=test_mse)
 
