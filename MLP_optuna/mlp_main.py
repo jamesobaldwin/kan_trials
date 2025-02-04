@@ -123,8 +123,9 @@ class MLPModel(nn.Module):
         self.mlp_relu_stack = create_layers(input_size=input_size, init_size=init_size, phi_depth=phi_depth, rho_depth=rho_depth)
 
     def forward(self, x):
+        print(f"DEBUG: shape of x before flattening: {np.shape(x)}")
         x = x.view(1,-1)  # flatten input to shape [1,input_size]
-        print(f"DEBUG: shape of x: {np.shape(x)}")
+        print(f"DEBUG: shape of x after flattening: {np.shape(x)}")
         out = self.mlp_relu_stack(x)
         return out.squeeze(0)   # output shape [3,]
 
@@ -151,10 +152,11 @@ def trainMLP(config, logger, verbose):
         model.train()
         total_loss = 0
         
-        for i in range(len(config["X_train"])):
+        for point_set, target in zip(config["X_train"], config["y_train"]):
             optimizer.zero_grad()
-            outputs = model(config["X_train"][i].to(device))
-            loss = criterion(outputs, config["y_train"][i].to(device))
+            print(f"Before sending to model, point_set shape: {point_set.shape}")
+            outputs = model(point_set.to(device))
+            loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
