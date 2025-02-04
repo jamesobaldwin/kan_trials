@@ -30,24 +30,28 @@ def calculate_metrics(y_test, preds):
     """ Compute R² scores, MAE, and regression slopes for each dimension (X, Y, Z). """
     metrics = {}
     for i, axis in enumerate(['x', 'y', 'z']):
-        metrics[f'r2_{axis}'] = r2_score(y_test[:, i], preds[:, i])
+        
+        slope, intercept, r_value, _, _ = linregress(y_test[:, i], preds[:, i])
+        
+        metrics[f'r2_{axis}'] = r_value*r_value
         metrics[f'mae_{axis}'] = mean_absolute_error(y_test[:, i], preds[:, i])
-        slope, intercept, _, _, _ = linregress(y_test[:, i], preds[:, i])
         metrics[f'slope_{axis}'] = slope
         metrics[f'intercept_{axis}'] = intercept
+    
     return metrics
 
-def plot_results(y_test, preds, learning_rate):
+def plot_results(y_test, preds, metrics, learning_rate):
     """ Generate scatter plots with regression lines and metric annotations. """
     
     fig, axs = plt.subplots(1, 3, figsize=(20, 6), sharey=True, sharex=True)
     axes_labels = ['x', 'y', 'z']
 
     for i, axis in enumerate(axes_labels):
-        # Compute linear regression
-        slope, intercept, r_value, _, _ = linregress(y_test[:, i], preds[:, i])
-        r2 = r_value**2
-        mae = np.mean(np.abs(y_test[:, i] - preds[:, i]))
+        # Retrieve precomputed metrics
+        slope = metrics[f'slope_{axis}']
+        intercept = metrics[f'intercept_{axis}']
+        r2 = metrics[f'r2_{axis}']
+        mae = metrics[f'mae_{axis}']
 
         # Scatter plot
         scatter = axs[i].scatter(y_test[:, i], preds[:, i], alpha=0.5, label="Data Points", edgecolors='k')
