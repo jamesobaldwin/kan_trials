@@ -15,6 +15,8 @@ def load_optimizer():
             'Optuna is not installed, falling back to RandomSearch strategy.')
         aSearchStrategy = RandomSearch
 
+    return aSearchStrategy
+
 
 def job_complete_callback(
         job_id,                 # type: str
@@ -28,8 +30,10 @@ def job_complete_callback(
         if job_id == top_performance_job_id:
             print(f'🎉 New best model found! Loss: {objective_value}')
     
-def main():   
+def main(aSearchStrategy):   
 
+    aSearchStrategy = load_optimizer()
+    
     # 🔹 Initialize ClearML Task
     task = Task.init(
         project_name="MLP Optimization",
