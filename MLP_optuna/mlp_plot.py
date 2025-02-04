@@ -83,7 +83,7 @@ def plot_results(y_test, preds, learning_rate):
 
     return fig_name  # Return filename for artifact upload
 
-def run(optuna_task_id):
+def run():
     """ ClearML Task for Plotting Predictions vs Ground Truth """
     task, params = init_task(project_name="MLP Optimization", task_name="Plot Results")
 
