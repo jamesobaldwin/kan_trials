@@ -187,7 +187,7 @@ def test(model, test_tensor, test_targets, scaler):
 
     return np.array(predictions), test_mse
 
-def upload_artifacts():
+def upload_artifacts(task):
     task.upload_artifact("preds", preds)
     task.upload_artifact("lr", config['lr'])
     task.upload_artifact("y_test", config['y_test'])
@@ -231,7 +231,7 @@ def main():
 
     # test the model and report the results
     preds, test_mse = test(model, X_test, y_test, scaler)
-    upload_artifacts()
+    upload_artifacts(task)
     logger.report_single_value(name="test_mse", value=test_mse)
 
     logger.flush()
