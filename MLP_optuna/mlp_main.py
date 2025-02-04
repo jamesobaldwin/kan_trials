@@ -186,7 +186,7 @@ def test(model, test_tensor, scaler):
 def main():
 
     # initialize the task
-    task, params = init_task(project_name='MLP Optimization', task_name='Optuna Controller')
+    task, params = init_task(project_name='MLP Optimization', task_name='Optuna Controller (50/250)')
 
     logger = task.get_logger()
 
