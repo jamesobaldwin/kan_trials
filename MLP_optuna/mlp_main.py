@@ -44,12 +44,8 @@ def retrieve_data(task_id) -> dict[str, any]:
     # Get the artifact object
     artifact = data_task.artifacts["train_test_data"]
     
-    # Get the local copy path of the artifact
-    local_path = artifact.get_local_copy()
-    
-    # Load the dictionary from the pickle file
-    with open(local_path, "rb") as f:
-        train_test_data = pickle.load(f)
+    # load data into memory
+    train_test_data = artifact.get()
     
     return train_test_data
 
@@ -123,9 +119,9 @@ class MLPModel(nn.Module):
         self.mlp_relu_stack = create_layers(input_size=input_size, init_size=init_size, phi_depth=phi_depth, rho_depth=rho_depth)
 
     def forward(self, x):
-        print(f"DEBUG: shape of x before flattening: {np.shape(x)}")
+        # print(f"DEBUG: shape of x before flattening: {np.shape(x)}")
         x = x.view(1,-1)  # flatten input to shape [1,input_size]
-        print(f"DEBUG: shape of x after flattening: {np.shape(x)}")
+        # print(f"DEBUG: shape of x after flattening: {np.shape(x)}")
         out = self.mlp_relu_stack(x)
         return out.squeeze(0)   # output shape [3,]
 
@@ -151,15 +147,17 @@ def trainMLP(config, logger, verbose):
     for epoch in range(config["num_epochs"]):
         model.train()
         total_loss = 0
-        
+
+        print(f"DEBUG: entering point set loop, epoch {epoch}...")
         for point_set, target in zip(config["X_train"], config["y_train"]):
             optimizer.zero_grad()
-            print(f"Before sending to model, point_set shape: {point_set.shape}")
+            # print(f"Before sending to model, point_set shape: {point_set.shape}")
             outputs = model(point_set.to(device))
             loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
+        print(f"DEBUG: exiting point set loop, epoch {epoch}...")
 
         avg_epoch_loss = total_loss / len(config["X_train"])
         mlp_losses.append(avg_epoch_loss)
