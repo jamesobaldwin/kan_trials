@@ -136,8 +136,8 @@ def trainMLP(config, logger, verbose):
         rho_depth=config["rho_depth"]
     ).to(device)
 
-    print("Printing model")
-    print(model)
+    # print("Printing model")
+    # print(model)
 
     optimizer = optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
     criterion = nn.MSELoss()
@@ -195,7 +195,7 @@ def upload_artifacts(task, preds, lr, y_test):
 def main():
 
     # initialize the task
-    task, params = init_task(project_name='MLP Optimization', task_name='Optuna Controller')
+    task, params = init_task(project_name='MLP Optimization', task_name='Base Trainer')
 
     logger = task.get_logger()
 
