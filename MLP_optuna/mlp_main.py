@@ -174,7 +174,7 @@ def test(model, test_tensor, test_targets, scaler):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
     predictions = []
-    print("DEBUG: entering prediction loop...")
+    # print("DEBUG: entering prediction loop...")
     # print(f"DEBUG: shape of test_tensor: {np.shape(test_tensor)}")
     with torch.no_grad():
         for point_set in test_tensor:
@@ -190,7 +190,7 @@ def test(model, test_tensor, test_targets, scaler):
 def main():
 
     # initialize the task
-    task, params = init_task(project_name='MLP Optimization', task_name='Optuna Controller 250')
+    task, params = init_task(project_name='MLP Optimization', task_name='Optuna Controller')
 
     logger = task.get_logger()
 
@@ -198,7 +198,7 @@ def main():
     train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
 
-    print(f"DEBUG: shape of X_train[0]: {np.shape(X_train[0])}") 
+    # print(f"DEBUG: shape of X_train[0]: {np.shape(X_train[0])}") 
 
     config = {
         "input_size": X_train[0].numel(),
