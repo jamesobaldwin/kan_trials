@@ -30,7 +30,7 @@ def job_complete_callback(
         if job_id == top_performance_job_id:
             print(f'🎉 New best model found! Loss: {objective_value}')
     
-def main(aSearchStrategy):   
+def main():   
 
     aSearchStrategy = load_optimizer()
     
