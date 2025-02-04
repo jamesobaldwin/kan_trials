@@ -6,13 +6,14 @@ from clearml.automation import (
 )
 
 # Load Optuna optimizer, if available
-try:
-    from clearml.automation.optuna import OptimizerOptuna  # noqa
-    aSearchStrategy = OptimizerOptuna
-except ImportError:
-    logging.warning(
-        'Optuna is not installed, falling back to RandomSearch strategy.')
-    aSearchStrategy = RandomSearch
+def load_optimizer():
+    try:
+        from clearml.automation.optuna import OptimizerOptuna  # noqa
+        aSearchStrategy = OptimizerOptuna
+    except ImportError:
+        logging.warning(
+            'Optuna is not installed, falling back to RandomSearch strategy.')
+        aSearchStrategy = RandomSearch
 
 
 def job_complete_callback(
@@ -27,7 +28,8 @@ def job_complete_callback(
         if job_id == top_performance_job_id:
             print(f'🎉 New best model found! Loss: {objective_value}')
     
-    
+def main():   
+
     # 🔹 Initialize ClearML Task
     task = Task.init(
         project_name="MLP Optimization",
@@ -90,18 +92,12 @@ def job_complete_callback(
     # Retrieve top experiments
     top_experiments = optimizer.get_top_experiments(top_k=3)
     print(f"Top Experiment IDs: {[exp.id for exp in top_experiments]}")
+    task.upload_artifact("top_exp", top_experiments)
     
     # Ensure optimization stops
     optimizer.stop()
     
     print("Hyperparameter Optimization Completed.")
-
-    return top_experiments
-
-def main():
-
-    top_exp = job_complete_callback()
-    
 
 if __name__=="__main__":
     main()
