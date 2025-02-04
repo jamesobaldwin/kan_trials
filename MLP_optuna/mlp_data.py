@@ -88,6 +88,7 @@ def main():
 
     # store the training, test, and scalar object data in a dictionary
     train_test_data = generate_train_test_data(params)
+    print(f"DEBUG: shape of X_train: {np.shape(train_test_data['X_train'])}")
 
     # upload artifacts to ClearML servers
     save_artifacts(task, train_test_data)
