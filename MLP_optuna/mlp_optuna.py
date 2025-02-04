@@ -96,9 +96,9 @@ def main():
     optimizer.wait()  # Wait for process to complete
     
     # Retrieve top experiments
-    top_experiments = optimizer.get_top_experiments(top_k=3)
-    print(f"Top Experiment IDs: {[exp.id for exp in top_experiments]}")
-    task.upload_artifact("top_exp", top_experiments)
+    top_exp = optimizer.get_top_experiments_details(top_k=1, all_hyper_parameters=True)
+    print(top_exp[0])
+    task.upload_artifact("top_exp", top_exp[0])
     
     # Ensure optimization stops
     optimizer.stop()
