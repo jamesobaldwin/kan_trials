@@ -16,7 +16,13 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
         "num_point_sets": 50,
         "num_points_per_set": 250,
         "num_epochs": 10,
-        
+        "init_size": 512,
+        "phi_depth": 2,
+        "rho_depth": 3,
+        "optimizer": 'Adam',
+        "lr": 1e-5,
+        "weight_decay": 1e-2,
+        "momentum": None,
         "data_task_id": "b666a8559ac14c5e8ad142d571c0c9ba",
     }
 
@@ -24,17 +30,6 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     
     return task, params
 
-
-# def retrieve_data(task_id) -> dict[str, any]:
-#     """
-#     grab the training and test data created in mlp_data.py
-#     """
-#     data_task = Task.get_task(
-#         task_id=task_id
-#     )
-#     train_test_data = data_task.artifacts["train_test_data"].get()
-
-#     return train_test_data
 def retrieve_data(task_id) -> dict[str, any]:
     """
     Grab the training and test data created in mlp_data.py.
@@ -85,8 +80,8 @@ def save_artifacts(task: Task, preds: np.ndarray, y_test: np.ndarray, lr: float)
 
 def create_layers(input_size: int, init_size: int, phi_depth: int, rho_depth: int):
 
-    assert isinstance(input_size, int), f"Error: input_size is {input_size}, expected int"
-    assert isinstance(init_size, int), f"Error: init_size is {init_size}, expected int"
+    # assert isinstance(input_size, int), f"Error: input_size is {input_size}, expected int"
+    # assert isinstance(init_size, int), f"Error: init_size is {init_size}, expected int"
     
     layers = [nn.Linear(input_size, init_size), nn.ReLU()]
     
@@ -119,9 +114,7 @@ class MLPModel(nn.Module):
         self.mlp_relu_stack = create_layers(input_size=input_size, init_size=init_size, phi_depth=phi_depth, rho_depth=rho_depth)
 
     def forward(self, x):
-        # print(f"DEBUG: shape of x before flattening: {np.shape(x)}")
         x = x.view(1,-1)  # flatten input to shape [1,input_size]
-        # print(f"DEBUG: shape of x after flattening: {np.shape(x)}")
         out = self.mlp_relu_stack(x)
         return out.squeeze(0)   # output shape [3,]
 
@@ -136,10 +129,22 @@ def trainMLP(config, logger, verbose):
         rho_depth=config["rho_depth"]
     ).to(device)
 
-    # print("Printing model")
-    # print(model)
-
-    optimizer = optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
+    lr = config["lr"]
+    weight_decay = config["weight_decay"]
+    momentum = config.get("momentum", 0.0)
+    
+    if config['optimizer'] == "Adam":
+        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    elif config['optimizer'] == "AdamW":
+        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    elif config['optimizer'] == "SGD":
+        momentum = config.get("momentum", 0.9)
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    elif config['optimizer'] == "Ranger":
+        optimizer = Ranger(model.parameters(), lr=lr, weight_decay=weight_decay)
+    else:
+        raise ValueError(f"Unknown optimizer: {optimizer_type}")
+    
     criterion = nn.MSELoss()
     
     mlp_losses = []
@@ -207,17 +212,19 @@ def main():
 
     config = {
         "input_size": X_train[0].numel(),
-        "init_size": 512,
-        "phi_depth": 2,
-        "rho_depth": 3,
+        "init_size": params['init_size'],
+        "phi_depth": params['phi_depth'],
+        "rho_depth": params['rho_depth'],
         "num_epochs": params['num_epochs'],
         "X_train": X_train,
         "y_train": y_train,
         "X_test": X_test,
         "y_test": y_test,
         "scaler": scaler,
-        "lr": 1e-5,
-        "weight_decay": 1e-2,        
+        "lr": params['lr'],
+        "weight_decay": params['weight_decay'], 
+        "momentum": params.get('momentum', 0.),
+        "optimizer": params['optimizer'],
     }
 
     # perform the training and log the results
