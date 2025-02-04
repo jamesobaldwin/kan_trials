@@ -5,9 +5,20 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from scipy.stats import linregress
 
 
-def load_artifacts():
+def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
+    task = Task.init(project_name=project_name, task_name=task_name)
+
+    params = {
+        "optuna_task_id": "8783c98ce0a44ceca78baa74edea9ab8",
+    }
+
+    params = task.connect(params)
+    
+    return task, params
+
+def load_artifacts(optuna_task_id):
     """ Retrieve test targets and predictions from the ClearML Optuna Controller Task. """
-    optuna_task = Task.get_task(project_name="MLP Optimization", task_name="optuna controller")
+    optuna_task = Task.get_task(task_id=optuna_task_id)
 
     preds = optuna_task.artifacts["preds"].get()
     y_test = optuna_task.artifacts["y_test"].get()
@@ -74,10 +85,10 @@ def plot_results(y_test, preds, learning_rate):
 
 def run(optuna_task_id):
     """ ClearML Task for Plotting Predictions vs Ground Truth """
-    task = Task.init(project_name="MLP Optimization", task_name="plot results", script_path="MLP_optuna/mlp_plot.py")
+    task, params = init_task(project_name="MLP Optimization", task_name="Plot Results")
 
     # retrieve stored predictions and y_test from the Optuna Controller task
-    preds, y_test, lr = load_artifacts()
+    preds, y_test, lr = load_artifacts(params['optuna_task_id'])
 
     # compute evaluation metrics
     metrics = calculate_metrics(y_test, preds)
