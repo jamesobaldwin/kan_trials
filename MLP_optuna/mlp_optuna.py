@@ -71,9 +71,9 @@ def main():
             DiscreteParameterRange("General/weight_decay", values=[1e-6, 1e-5, 1e-4, 1e-3]),
             DiscreteParameterRange("General/momentum", values=[0.5, 0.7, 0.9])  # Only applies to SGD
         ],
-        objective_metric_title= "test_mse",
-        objective_metric_series= "test_mse",
-        objective_metric_sign= "min",  # We want to minimize Test MSE
+        objective_metric_title= ["mse_train_loss", "mse_test_loss"]
+        objective_metric_series= ["train", "test"]
+        objective_metric_sign= ["min", "min"]  # We want to minimize Test MSE
         max_number_of_concurrent_tasks=100,
         optimizer_class=aSearchStrategy,
         execution_queue=execution_queue,

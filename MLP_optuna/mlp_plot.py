@@ -9,7 +9,7 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     task = Task.init(project_name=project_name, task_name=task_name)
 
     params = {
-        "optuna_task_id": "8783c98ce0a44ceca78baa74edea9ab8",
+        "optuna_task_id": "8c8f87f43aa54ce7b508b29cba60c77d",
     }
 
     params = task.connect(params)
