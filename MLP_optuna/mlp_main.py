@@ -144,51 +144,60 @@ def trainMLP(config, logger, verbose):
         raise ValueError(f"Unknown optimizer: {optimizer_type}")
     
     criterion = nn.MSELoss()
-    
-    mlp_losses = []
+    scaler = config['scaler']
     
     for epoch in range(config["num_epochs"]):
+        
         model.train()
-        total_loss = 0
-
-        # print(f"DEBUG: entering point set loop, epoch {epoch}...")
-        for point_set, target in zip(config["X_train"], config["y_train"]):
+        total_train_loss = 0
+        total_test_loss = 0
+        
+        for i, (point_set, target) in enumerate(zip(config["X_train"], config["y_train"])):
             optimizer.zero_grad()
             # print(f"Before sending to model, point_set shape: {point_set.shape}")
             outputs = model(point_set.to(device))
             loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
-            total_loss += loss.item()
-        # print(f"DEBUG: exiting point set loop, epoch {epoch}...")
+            total_train_loss += loss.item()
 
-        avg_epoch_loss = total_loss / len(config["X_train"])
-        mlp_losses.append(avg_epoch_loss)
+        # log training loss per epoch
+        avg_train_loss = total_train_loss / len(config["X_train"])
+        logger.report_scalar(title='mse_train_loss', series='train', iteration=epoch, value=avg_train_loss)
 
-        logger.report_scalar(title="avg_epoch_loss", series='losses', iteration=epoch, value=avg_epoch_loss)
+        # validate
+        model.eval()
+        preds = []
+        with torch.no_grad():
+            for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
+                pred = model(point_set.to(device))
+                pred = scaler.inverse_transform(pred.cpu().numpy().reshape(1, -1)).squeeze()
+                preds.append(pred)
+                total_test_loss += mean_squared_error(pred, target)
+                
+        # log test loss per epoch
+        avg_test_loss = total_test_loss / len(config["X_test"])
+        logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
 
         if verbose and (epoch + 1) % (0.1 * config["num_epochs"]) == 0:
             print(f"Epoch [{epoch + 1}/{config['num_epochs']}], Loss: {avg_epoch_loss:.4e}")
     
-    return model, mlp_losses
+    return model, preds
 
 
-def test(model, test_tensor, test_targets, scaler):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.eval()
-    predictions = []
-    # print("DEBUG: entering prediction loop...")
-    # print(f"DEBUG: shape of test_tensor: {np.shape(test_tensor)}")
-    with torch.no_grad():
-        for point_set in test_tensor:
-            # print(f"DEBUG: shape of point_set: {np.shape(point_set)}")
-            output = model(point_set.to(device))
-            output = scaler.inverse_transform(output.cpu().numpy().reshape(1, -1)).squeeze()
-            predictions.append(output)
+# def test(model, test_tensor, test_targets, scaler):
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     model.eval()
+#     predictions = []
 
-    test_mse = mean_squared_error(test_targets, predictions)
+#     with torch.no_grad():
+#         for point_set in test_tensor:
+       
+#             output = model(point_set.to(device))
+#             output = scaler.inverse_transform(output.cpu().numpy().reshape(1, -1)).squeeze()
+#             predictions.append(output)
 
-    return np.array(predictions), test_mse
+#     return np.array(predictions)
 
 def upload_artifacts(task, preds, lr, y_test):
     task.upload_artifact("preds", preds)
@@ -226,16 +235,13 @@ def main():
     }
 
     # perform the training and log the results
-    model, losses = trainMLP(
+    model, preds = trainMLP(
         config=config,  # Pass dictionary instead of many arguments
         logger=logger,
         verbose=True
     )
-
-    # test the model and report the results
-    preds, test_mse = test(model, X_test, y_test, scaler)
+    
     upload_artifacts(task, preds, config['lr'], config['y_test'])
-    logger.report_single_value(name="test_mse", value=test_mse)
 
     logger.flush()
         
