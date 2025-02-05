@@ -15,6 +15,9 @@ def init_task(project_name: str, task_name: str) -> Task:
         "num_point_sets": 1000,   # number of point sets n
         "lower": 200,             # lower limit on number N points in point set
         "upper": 1000,            # upper " "
+    }
+
+    params = task.connect(params)
     
     return task, params
 
