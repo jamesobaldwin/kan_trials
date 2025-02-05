@@ -8,26 +8,45 @@ from kan import KAN
 from sklearn.preprocessing import MinMaxScaler
 
 
-def init_task(project_name: str, task_name: str) -> Task:
-    """Initialize ClearML task"""
-    task = Task.init(
-        project_name=project_name, task_name=task_name
-    )
+def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
+    task = Task.init(project_name=project_name, task_name=task_name)
 
     params = {
-        "n_trials": 50, # num optuna trials
-        "optimizer": "Adam",
-        "loss_fn": "MSELoss",
+        "num_point_sets": 50,
+        "num_points_per_set": 250,
+        "num_epochs": 10,
+        "num_layers1": num_layers1,
+        "num_layers2": num_layers2,
+        "a1_0": 0,
+        "m1_0": 3,
+        "a1_1": 2,
+        "m1_1": 1,
+        "a1_2": 1,
+        "m1_2": 3,
+        "a2_0": 0,
+        "m2_0": 1,
+        "a2_1": 3,
+        "m2_1": 1,
+        "a2_2": 2,
+        "m2_2": 3,
+        "transition_dim": transition_dim,
+        "grid1": grid1,
+        "grid2": grid2,
+        "optimizer": 'Adam',
+        "lr": 1e-5,
+        "weight_decay": 1e-2,
+        "momentum": None,
+        "data_task_id": "4688cfe53e1946de98401a33c5ec39c0",    # Data Generator 
     }
-    
-    task.connect(params)
-    
-    return task
 
-def retrieve_train_test_data() -> dict:
+    params = task.connect(params)
+
+    return task, params
+
+def retrieve_data(data_task_id: str) -> dict:
     
     # Find the task that generated the artifact
-    source_task = Task.get_task(project_name="KAN deep set optimization", task_name="data generation")
+    source_task = Task.get_task(task_id=data_task_id)
     
     # Retrieve the dictionary directly from the artifact
     train_test_data = source_task.artifacts["train_test_data"].get()
@@ -42,139 +61,189 @@ def unpack_and_convert(train_test_data: dict):
     y_train = [torch.tensor(train_test_data['y_train'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['y_train']))]
     X_test = [torch.tensor(train_test_data['X_test'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['X_test']))]
 
-    return X_train, y_train, X_test, train_test_data['y_test'], train_test_data['scaler']
+    return (
+        X_train, 
+        y_train, 
+        X_test, 
+        train_test_data['y_test'], 
+        train_test_data['scaler'],
+       )
 
-def save_artifacts(task: Task, preds: np.ndarray):
-    task.upload_artifacts("preds", preds)
+# save artifacts for use in plotting final model
+def save_artifacts(task: Task, preds: np.ndarray, y_test: np.ndarray, lr: float):
+    task.upload_artifact("preds", preds)
+    task.upload_artifact("y_test", y_test)
+    task.upload_artifact("lr", lr)
 
-def objective(trial: optuna.Trial, 
-              task: Task, 
-              X_train: List[torch.Tensor], 
-              y_train: torch.Tensor, 
-              X_test: List[torch.Tensor], 
-              y_test: np.ndarray, 
-              scaler: MinMaxScaler) -> float:
-    # optimize number of hidden layers (1, 2, or 3)
-    num_layers1 = trial.suggest_int("num_layers1", 1, 3)
-    num_layers2 = trial.suggest_int("num_layers2", 1, 3)
-
-    # optimize hidden layers for layer 1
+def generate_layers(config):
+    
+    # build the list of layer parameters based on num_layers
     hidden_layers_1 = []
-    for i in range(num_layers1):
-        a = trial.suggest_int(f"a1_{i}", 0, 4)  # addition nodes, from 0 to 4
-        m = trial.suggest_int(f"m1_{i}", 1, 4)  # addition nodes, from 1 to 4
-        hidden_layers_1.append([a, m])
+    for i in range(config['num_layers_1']):
+        a = int(config.get(f'a1_{i}', 0))  # Default value if not set
+        m = int(config.get(f'm1_{i}', 0))
+        hidden_layers_1.append((a, m))
 
-    # optimize output size of layer 1 (input size of layer 2)
-    out_size_layer1 = trial.suggest_int("out_size_layer1", 3, 10)
-
-    # optimize hidden layers for layer 2
     hidden_layers_2 = []
-    for i in range(num_layers2):
-        a = trial.suggest_int(f"a2_{i}", 0, 4)  # addition nodes, from 0 to 4
-        m = trial.suggest_int(f"m2_{i}", 1, 4)  # addition nodes, from 1 to 4
-        hidden_layers_2.append([a, m])
+    for i in range(config['num_layers_2']):
+        a = int(config.get(f'a2_{i}', 0))  # Default value if not set
+        m = int(config.get(f'm2_{i}', 0))
+        hidden_layers_2.append((a, m))
 
-    # optimize grid sizes
-    grid1 = trial.suggest_int("grid1", 3, 10)
-    grid2 = trial.suggest_int("grid2", 3, 10)
+    return hidden_layers_1, hidden_layers_2
 
-    # Convert hidden layers into a dictionary-friendly format
-    hidden_layers_dict = {
-        "hidden_layers_1": {f"layer_{i}": {"a": a, "m": m} for i, (a, m) in enumerate(hidden_layers_1)},
-        "hidden_layers_2": {f"layer_{i}": {"a": a, "m": m} for i, (a, m) in enumerate(hidden_layers_2)}
-    }
+# define the KAN model
+class KANModel(nn.Module):
+    def __init__(
+        self, config
+    ):
+        super(KANModel, self).__init__()
+        self.layer1 = KAN(
+            width=[4] + config['hidden_layers_1'] + [ config['transition_dim'] ], grid=config['grid1'], k=3
+        )
+        self.layer2 = KAN(
+            width=[ config['transition_dim'] ] + config['hidden_layers_2'] + [3], grid=config['grid2'], k=3
+        )
 
-    # Store hyperparameters for this trial
-    trial_params = {
-        "num_layers1": num_layers1,
-        "num_layers2": num_layers2,
-        "out_size_layer1": out_size_layer1,
-        "grid1": grid1,
-        "grid2": grid2,
-        **hidden_layers_dict  # Merge the hidden layer dictionary
-    }
+    def forward(self, point_set):
+        layer1_out = self.layer1(point_set)  # Output shape (n, transition_dim)
+        agg_out = torch.mean(layer1_out, dim=0).unsqueeze(
+            0
+        )  # Shape (1, transition_dim)
+        output = self.layer2(agg_out).squeeze(0)  # Shape (3) representing (x,y,z)
+        return output
 
-    # Log trial hyperparameters in ClearML
-    task.connect(trial_params)  # Logs per-trial hyperparameters
+def trainKAN(config, logger, verbose):
 
-    # define the KAN model
-    class KANModel(nn.Module):
-        def __init__(
-            self, hidden_layers_1, hidden_layers_2, out_size_layer1, grid1, grid2
-        ):
-            super(KANModel, self).__init__()
-            self.layer1 = KAN(
-                width=[4] + hidden_layers_1 + [out_size_layer1], grid=grid1, k=3
-            )
-            self.layer2 = KAN(
-                width=[out_size_layer1] + hidden_layers_2 + [3], grid=grid2, k=3
-            )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        def forward(self, point_set):
-            layer1_out = self.layer1(point_set)  # Output shape (n, out_size_layer1)
-            agg_out = torch.mean(layer1_out, dim=0).unsqueeze(
-                0
-            )  # Shape (1, out_size_layer1)
-            output = self.layer2(agg_out).squeeze(0)  # Shape (3) representing (x,y,z)
-            return output
+    model = KAN(config['hidden_layers_1'], 
+                config['hidden_layers_2'], 
+                config['transition_dim'], 
+                config['grid1'], 
+                config['grid2']).to(device)`
 
-    model = KAN(hidden_layers_1, hidden_layers_2, out_size_layer1, grid1, grid2)
-
-    # train the model
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    if config['optimizer'] == "Adam":
+        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    elif config['optimizer'] == "AdamW":
+        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    elif config['optimizer'] == "SGD":
+        momentum = config.get("momentum", 0.9)
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    elif config['optimizer'] == "LBGFS":
+        optimizer = optim.LBFGS(model.parameters(), lr=lr)
+        # defaults used in original MultKAN docs
+        # optimizer = LBFGS(self.get_params(), lr=lr, history_size=10, line_search_fn="strong_wolfe", tolerance_grad=1e-32, tolerance_change=1e-32, tolerance_ys=1e-32)
+    else:
+        raise ValueError(f"Unknown optimizer: {optimizer_type}")
+        
     loss_fn = nn.MSELoss()
+    scaler = config['scaler']
 
-    for epoch in range(50):
+    for epoch in range(config['num_epochs']):
+        
         model.train()
+        total_train_loss = 0
+        total_test_loss = 0
 
-        for i in range(len(X_train)):
+        for i, (point_set, target) in enumerate(zip(config["X_train"], config["y_train"])):
             optimizer.zero_grad()
-            y_pred = model(X_train[i])
-            loss = loss_fn(y_pred, y_train[i])
+            outputs = model(point_set.to(device))
+            loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
-            task.get_logger().report_scalar("Loss", "train", value=loss.item(), iteration=epoch)
+            total_train_loss += loss.item()
 
-    # test the model
-    model.eval()
-    preds = []
-    with torch.no_grad():
-        for point_set in X_test:
-            pred = model(point_set)
-            # remove batch dimension and store the prediction
-            pred = scaler.inverse_transform(pred.reshape(1,-1)).squeeze()
-            preds.append(pred)
-            
-    # convert to numpy array and save dataset
-    preds = np.array(preds)    
-    save_artifacts(task, preds)
-    # calculate and store the MSE
-    mse = np.mean((preds - y_train)**2)
+        # log training loss per epoch
+        avg_train_loss = total_train_loss / len(config["X_train"])
+        logger.report_scalar(title='mse_train_loss', series='train', iteration=epoch, value=avg_train_loss)
 
-    task.get_logger().report_scalar("MSE", "test", value=mse, iteration=1)
+        # validate
+        model.eval()
+        preds = []
+        with torch.no_grad():
+            for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
+                pred = model(point_set.to(device))
+                pred = scaler.inverse_transform(pred.cpu().numpy().reshape(1, -1)).squeeze()
+                preds.append(pred)
+                total_test_loss += mean_squared_error(pred, target)
+                
+        # log test loss per epoch
+        avg_test_loss = total_test_loss / len(config["X_test"])
+        logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
 
-    return mse
-
-def run_optuna(task, X_train, y_train, X_test, y_test, scaler):
-    # === Run Optuna Optimization ===
-    study = optuna.create_study(direction="minimize")
+        if verbose and (epoch + 1) % (0.1 * config["num_epochs"]) == 0:
+            print(f"Epoch [{epoch + 1}/{config['num_epochs']}], Loss: {avg_train_loss:.4e}")
     
-    study.optimize(lambda trial: objective(trial, task, X_train, y_train, X_test, y_test, scaler), n_trials=50)
+    return model, preds
+
 
 def main():
 
-    task, params = init_task(project_name="KAN deep set optimization", task_name="optuna controller")
+    task, params = init_task(project_name="KAN-DS optimization", task_name="Optuna Controller")
 
-    train_test_data = retrieve_train_test_data()
-
-    # unpack and save data objects
+    # retrieve training and test data
+    train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
 
-    # run the optuna optimization
-    run_optuna(task, X_train, y_train, X_test, y_test, scaler)
+    config = {
+        "num_epochs": 10,
+        "num_layers1": num_layers1,
+        "num_layers2": num_layers2,
+        "a1_0": 0,
+        "m1_0": 3,
+        "a1_1": 2,
+        "m1_1": 1,
+        "a1_2": 1,
+        "m1_2": 3,
+        "a2_0": 0,
+        "m2_0": 1,
+        "a2_1": 3,
+        "m2_1": 1,
+        "a2_2": 2,
+        "m2_2": 3,
+        "transition_dim": transition_dim,
+        "grid1": grid1,
+        "grid2": grid2,
+        "optimizer": 'Adam',
+        "lr": 1e-5,
+        "weight_decay": 1e-2,
+        "momentum": params.get('momentum', 0.),
+    }
 
+    # perform the training and log the results
+    model, preds = trainKAN(
+        config=config,  # Pass dictionary instead of many arguments
+        logger=logger,
+        verbose=True
+    )
+    
+    upload_artifacts(task, preds, config['lr'], config['y_test'])
+
+    logger.flush()
+    
     task.close()
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+# hyper_parameters = [
+#     UniformIntegerParameterRange('num_layers', min_value=1, max_value=3),
+#     # For layer 0
+#     UniformIntegerParameterRange('layer0_a', min_value=0, max_value=4),
+#     UniformIntegerParameterRange('layer0_m', min_value=1, max_value=4),
+#     # For layer 1
+#     UniformIntegerParameterRange('layer1_a', min_value=0, max_value=4),
+#     UniformIntegerParameterRange('layer1_m', min_value=1, max_value=4),
+#     # For layer 2
+#     UniformIntegerParameterRange('layer2_a', min_value=0, max_value=4),
+#     UniformIntegerParameterRange('layer2_m', min_value=1, max_value=4),
+#     # Other parameters…
+# ]
