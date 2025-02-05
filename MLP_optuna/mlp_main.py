@@ -180,7 +180,7 @@ def trainMLP(config, logger, verbose):
         logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
 
         if verbose and (epoch + 1) % (0.1 * config["num_epochs"]) == 0:
-            print(f"Epoch [{epoch + 1}/{config['num_epochs']}], Loss: {avg_epoch_loss:.4e}")
+            print(f"Epoch [{epoch + 1}/{config['num_epochs']}], Loss: {avg_train_loss:.4e}")
     
     return model, preds
 
