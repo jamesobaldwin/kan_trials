@@ -206,7 +206,7 @@ def main():
         "hidden_layers_2": hidden_layers_2,
         "transition_dim": params['transition_dim',
         "grid1": params['grid1'],
-        "grid2": params['grid2],
+        "grid2": params['grid2'],
         "optimizer": params['optimizer'],
         "lr": params['lr'],
         "weight_decay": params['weight_decay'],
