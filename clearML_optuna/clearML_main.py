@@ -204,7 +204,7 @@ def main():
         "scaler": scaler,
         "hidden_layers_1": hidden_layers_1,
         "hidden_layers_2": hidden_layers_2,
-        "transition_dim": params['transition_dim',
+        "transition_dim": params['transition_dim'],
         "grid1": params['grid1'],
         "grid2": params['grid2'],
         "optimizer": params['optimizer'],
