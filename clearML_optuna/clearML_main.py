@@ -121,7 +121,7 @@ def trainKAN(config, logger, verbose):
                 config['hidden_layers_2'], 
                 config['transition_dim'], 
                 config['grid1'], 
-                config['grid2']).to(device)`
+                config['grid2']).to(device)
 
     if config['optimizer'] == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
