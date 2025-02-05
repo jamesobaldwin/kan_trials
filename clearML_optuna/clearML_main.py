@@ -12,30 +12,31 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     task = Task.init(project_name=project_name, task_name=task_name)
 
     params = {
-        "num_point_sets": 50,
+        "num_point_sets": 50,                
         "num_points_per_set": 250,
         "num_epochs": 10,
-        "num_layers1": 1,
-        "num_layers2": 1,
-        "a1_0": 0,
-        "m1_0": 3,
+        "num_layers_1": 1,        # number of hidden layers in the first KAN model
+        "num_layers_2": 1,        # number of hidden layers in the second KAN model
+        "a1_0": 0,                # a1_{i}: addition nodes in ith hidden layer of first KAN model
+        "m1_0": 3,                # m1_{i}: multiplication nodes in ith hidden layer of first KAN model
         "a1_1": 2,
         "m1_1": 1,
         "a1_2": 1,
         "m1_2": 3,
-        "a2_0": 0,
-        "m2_0": 1,
+        "a2_0": 0,                # a2_{i}: addition nodes in ith hidden layer of second KAN model
+        "m2_0": 1,                # m2_{i}: multiplication nodes in ith hidden layer of second KAN model
         "a2_1": 3,
         "m2_1": 1,
         "a2_2": 2,
         "m2_2": 3,
-        "transition_dim": 5,
-        "grid1": 5,
+        "transition_dim": 5,      # transition dimension between the two KAN models; output dimension of first model, input dimension of second model
+        "grid1": 5,               # grid size for first KAN model
         "grid2": 10,
         "optimizer": 'Adam',
         "lr": 1e-5,
         "weight_decay": 1e-2,
         "momentum": None,
+        "agg_fn": 'mean',
         "data_task_id": "4688cfe53e1946de98401a33c5ec39c0",    # Data Generator 
     }
 
@@ -75,19 +76,19 @@ def save_artifacts(task: Task, preds: np.ndarray, y_test: np.ndarray, lr: float)
     task.upload_artifact("y_test", y_test)
     task.upload_artifact("lr", lr)
 
-def generate_layers(config):
+def generate_layers(params):
     
     # build the list of layer parameters based on num_layers
     hidden_layers_1 = []
-    for i in range(config['num_layers_1']):
-        a = int(config.get(f'a1_{i}', 0))  # Default value if not set
-        m = int(config.get(f'm1_{i}', 0))
+    for i in range(params['num_layers_1']):
+        a = int(params.get(f'a1_{i}', 0))  # Default value if not set
+        m = int(params.get(f'm1_{i}', 0))
         hidden_layers_1.append((a, m))
 
     hidden_layers_2 = []
-    for i in range(config['num_layers_2']):
-        a = int(config.get(f'a2_{i}', 0))  # Default value if not set
-        m = int(config.get(f'm2_{i}', 0))
+    for i in range(params['num_layers_2']):
+        a = int(params.get(f'a2_{i}', 0))  # Default value if not set
+        m = int(params.get(f'm2_{i}', 0))
         hidden_layers_2.append((a, m))
 
     return hidden_layers_1, hidden_layers_2
@@ -105,11 +106,16 @@ class KANModel(nn.Module):
             width=[ config['transition_dim'] ] + config['hidden_layers_2'] + [3], grid=config['grid2'], k=3
         )
 
+        self.agg_function = config['agg_function']
+
     def forward(self, point_set):
         layer1_out = self.layer1(point_set)  # Output shape (n, transition_dim)
-        agg_out = torch.mean(layer1_out, dim=0).unsqueeze(
-            0
-        )  # Shape (1, transition_dim)
+        if self.agg_function == 'mean':
+            agg_out = torch.mean(layer1_out, dim=0).unsqueeze(0)  # Shape: (1, transition_dim)
+        elif self.agg_function == 'sum':
+            agg_out = torch.sum(layer1_out, dim=0).unsqueeze(0)  # Shape: (1, transition_dim)
+        elif self.agg_function == 'std':
+            agg_out = torch.std(layer1_out, dim=0).unsqueeze(0)  # Shape: (1, transition_dim)
         output = self.layer2(agg_out).squeeze(0)  # Shape (3) representing (x,y,z)
         return output
 
@@ -186,28 +192,24 @@ def main():
     train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
 
+    # generate the hidden layers
+    hidden_layers_1, hidden_layers_2 = generate_layers(params)
+
     config = {
         "num_epochs": 10,
-        "num_layers1": num_layers1,
-        "num_layers2": num_layers2,
-        "a1_0": 0,
-        "m1_0": 3,
-        "a1_1": 2,
-        "m1_1": 1,
-        "a1_2": 1,
-        "m1_2": 3,
-        "a2_0": 0,
-        "m2_0": 1,
-        "a2_1": 3,
-        "m2_1": 1,
-        "a2_2": 2,
-        "m2_2": 3,
-        "transition_dim": transition_dim,
-        "grid1": grid1,
-        "grid2": grid2,
-        "optimizer": 'Adam',
-        "lr": 1e-5,
-        "weight_decay": 1e-2,
+        "X_train": X_train,
+        "y_train": y_train,
+        "X_test": X_test,
+        "y_test": y_test,
+        "scaler": scaler,
+        "hidden_layers_1": hidden_layers_1,
+        "hidden_layers_2": hidden_layers_2,
+        "transition_dim": params['transition_dim',
+        "grid1": params['grid1'],
+        "grid2": params['grid2],
+        "optimizer": params['optimizer'],
+        "lr": params['lr'],
+        "weight_decay": params['weight_decay'],
         "momentum": params.get('momentum', 0.),
     }
 
