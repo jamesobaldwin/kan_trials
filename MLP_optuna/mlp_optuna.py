@@ -44,7 +44,7 @@ def main():
     
     # 🔹 Define Arguments
     args = {
-        'template_task_id': 'c3439627afcf47a7bd856faf18745a31',  # Base experiment to optimize
+        'template_task_id': '08c2ff3e256b483690b5608ef349c118',  # Base experiment to optimize
         'run_as_service': False,
     }
     args = task.connect(args)
@@ -86,7 +86,7 @@ def main():
     # if running as a service, execute remotely
     if args['run_as_service']:
         task.execute_remotely(queue_name="services", exit_process=True)
-    
+
     # start Hyperparameter Optimization
     optimizer.set_report_period(0.2)
     optimizer.start(job_complete_callback=job_complete_callback)
