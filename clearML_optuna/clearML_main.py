@@ -151,9 +151,9 @@ def trainKAN(config, logger, verbose):
 
         for i, (point_set, target) in enumerate(zip(config["X_train"], config["y_train"])):
             optimizer.zero_grad()
-            print(f"DEBUG: shape of point_set before being sent to model: {np.shape(point_set)}")
+            # print(f"DEBUG: shape of point_set before being sent to model: {np.shape(point_set)}")
             outputs = model(point_set.to(device))
-            print(f"DEBUG: shape of outputs: {np.shape(outputs)}")
+            # print(f"DEBUG: shape of outputs: {np.shape(outputs)}")
             loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
@@ -222,7 +222,7 @@ def main():
         verbose=True
     )
     
-    upload_artifacts(task, preds, config['lr'], config['y_test'])
+    save_artifacts(task, preds, config['lr'], config['y_test'])
 
     logger.flush()
     
