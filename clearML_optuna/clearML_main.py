@@ -143,7 +143,7 @@ def trainKAN(config, logger, verbose):
     else:
         raise ValueError(f"Unknown optimizer: {config['optimizer']}")
         
-    loss_fn = nn.MSELoss()
+    criterion = nn.MSELoss()
     scaler = config['scaler']
 
     for epoch in range(config['num_epochs']):
