@@ -36,7 +36,7 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
         "lr": 1e-5,
         "weight_decay": 1e-2,
         "momentum": None,
-        "agg_fn": 'mean',
+        "agg_function": 'mean',
         "data_task_id": "4688cfe53e1946de98401a33c5ec39c0",    # Data Generator 
     }
 
@@ -123,11 +123,7 @@ def trainKAN(config, logger, verbose):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = KAN(config['hidden_layers_1'], 
-                config['hidden_layers_2'], 
-                config['transition_dim'], 
-                config['grid1'], 
-                config['grid2']).to(device)
+    model = KAN(config).to(device)
 
     if config['optimizer'] == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
@@ -215,6 +211,7 @@ def main():
         "lr": params['lr'],
         "weight_decay": params['weight_decay'],
         "momentum": params.get('momentum', 0.),
+        "agg_function": params['agg_fucntion'],
     }
 
     # perform the training and log the results
