@@ -9,7 +9,7 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     task = Task.init(project_name=project_name, task_name=task_name)
 
     params = {
-        "trainer_task_id": "794c33f3039e4b6ea3e750d312aef9d4",
+        "trainer_task_id": "898badb019f04991a5068d40353397a1",
     }
 
     params = task.connect(params)
@@ -22,7 +22,6 @@ def load_artifacts(trainer_task_id):
 
     preds = optuna_task.artifacts["preds"].get()
     y_test = optuna_task.artifacts["y_test"].get()
-    print(f"DEBUG: shape of y_test: {np.shape(y_test)}")
     lr = optuna_task.artifacts["lr"].get()
 
     return preds, y_test, lr
