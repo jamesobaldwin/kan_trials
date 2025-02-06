@@ -231,24 +231,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-# hyper_parameters = [
-#     UniformIntegerParameterRange('num_layers', min_value=1, max_value=3),
-#     # For layer 0
-#     UniformIntegerParameterRange('layer0_a', min_value=0, max_value=4),
-#     UniformIntegerParameterRange('layer0_m', min_value=1, max_value=4),
-#     # For layer 1
-#     UniformIntegerParameterRange('layer1_a', min_value=0, max_value=4),
-#     UniformIntegerParameterRange('layer1_m', min_value=1, max_value=4),
-#     # For layer 2
-#     UniformIntegerParameterRange('layer2_a', min_value=0, max_value=4),
-#     UniformIntegerParameterRange('layer2_m', min_value=1, max_value=4),
-#     # Other parameters…
-# ]
