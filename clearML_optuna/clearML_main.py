@@ -188,6 +188,8 @@ def main():
 
     task, params = init_task(project_name="KAN-DS optimization", task_name="Optuna Controller")
 
+    logger = task.get_logger()
+    
     # retrieve training and test data
     train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
