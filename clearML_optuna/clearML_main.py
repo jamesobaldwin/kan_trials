@@ -130,18 +130,18 @@ def trainKAN(config, logger, verbose):
                 config['grid2']).to(device)
 
     if config['optimizer'] == "Adam":
-        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+        optimizer = optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
     elif config['optimizer'] == "AdamW":
-        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+        optimizer = optim.AdamW(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
     elif config['optimizer'] == "SGD":
         momentum = config.get("momentum", 0.9)
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+        optimizer = optim.SGD(model.parameters(), lr=config['lr'], momentum=momentum, weight_decay=config['weight_decay'])
     elif config['optimizer'] == "LBGFS":
-        optimizer = optim.LBFGS(model.parameters(), lr=lr)
+        optimizer = optim.LBFGS(model.parameters(), lr=lconfig['lr']r)
         # defaults used in original MultKAN docs
         # optimizer = LBFGS(self.get_params(), lr=lr, history_size=10, line_search_fn="strong_wolfe", tolerance_grad=1e-32, tolerance_change=1e-32, tolerance_ys=1e-32)
     else:
-        raise ValueError(f"Unknown optimizer: {optimizer_type}")
+        raise ValueError(f"Unknown optimizer: {config['optimizer']}")
         
     loss_fn = nn.MSELoss()
     scaler = config['scaler']
