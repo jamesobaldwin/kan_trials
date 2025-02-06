@@ -211,7 +211,7 @@ def main():
         "lr": params['lr'],
         "weight_decay": params['weight_decay'],
         "momentum": params.get('momentum', 0.),
-        "agg_function": params['agg_fucntion'],
+        "agg_function": params['agg_function'],
     }
 
     # perform the training and log the results
