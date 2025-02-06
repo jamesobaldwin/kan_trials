@@ -123,7 +123,7 @@ def trainKAN(config, logger, verbose):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = KAN(config).to(device)
+    model = KANModel(config).to(device)
 
     if config['optimizer'] == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
