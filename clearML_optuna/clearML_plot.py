@@ -21,6 +21,7 @@ def load_artifacts(trainer_task_id):
     optuna_task = Task.get_task(task_id=trainer_task_id)
 
     preds = optuna_task.artifacts["preds"].get()
+    preds = np.array(preds)
     print(f"DEBUG: shape of preds: {np.shape(preds)}")
     print(f"DEBUG: type of preds: {type(preds)}")
     y_test = optuna_task.artifacts["y_test"].get()
