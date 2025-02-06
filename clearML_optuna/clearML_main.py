@@ -222,8 +222,8 @@ def main():
         logger=logger,
         verbose=True
     )
-    
-    save_artifacts(task, preds, config['lr'], config['y_test'])
+
+    save_artifacts(task, preds, config['y_test'], config['lr'])
 
     logger.flush()
     
