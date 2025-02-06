@@ -83,7 +83,7 @@ def main():
             DiscreteParameterRange("General/optimizer", values=["Adam", "AdamW", "SGD", "LBFGS"]),
             DiscreteParameterRange("General/lr", values=[1e-5, 5e-5, 1e-4, 5e-4, 1e-3]),
             DiscreteParameterRange("General/weight_decay", values=[1e-6, 1e-5, 1e-4, 1e-3]),
-            DiscreteParameterRange("General/momentum", values=[0.5, 0.7, 0.9])  # Only applies to SGD
+            DiscreteParameterRange("General/momentum", values=[0.5, 0.7, 0.9]),  # Only applies to SGD
             DiscreteParameterRange("General/agg_function", values=["mean", "sum", "std"]),
             
         ],
