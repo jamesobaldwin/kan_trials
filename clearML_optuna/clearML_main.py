@@ -134,7 +134,7 @@ def trainKAN(config, logger, verbose):
     elif config['optimizer'] == "SGD":
         momentum = config.get("momentum", 0.9)
         optimizer = optim.SGD(model.parameters(), lr=config['lr'], momentum=momentum, weight_decay=config['weight_decay'])
-    elif config['optimizer'] == "LBGFS":
+    elif config['optimizer'] == "LBFGS":
         optimizer = optim.LBFGS(model.parameters(), lr=config['lr'])
         # defaults used in original MultKAN docs
         # optimizer = LBFGS(self.get_params(), lr=lr, history_size=10, line_search_fn="strong_wolfe", tolerance_grad=1e-32, tolerance_change=1e-32, tolerance_ys=1e-32)
