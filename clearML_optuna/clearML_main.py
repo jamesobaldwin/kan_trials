@@ -156,6 +156,7 @@ def trainKAN(config, logger, verbose):
             optimizer.zero_grad()
             print(f"DEBUG: shape of point_set before being sent to model: {np.shape(point_set)}")
             outputs = model(point_set.to(device))
+            print(f"DEBUG: shape of outputs: {np.shape(outputs)}")
             loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
