@@ -155,7 +155,7 @@ def trainKAN(config, logger, verbose):
             # print(f"DEBUG: shape of point_set before being sent to model: {np.shape(point_set)}")
             outputs = model(point_set.to(device))
             # print(f"DEBUG: shape of outputs: {np.shape(outputs)}")
-            loss = mean_squared_error(outputs, target.to(device))
+            loss = mean_squared_error(outputs.detach().numpy(), target.to(device))
             loss.backward()
             optimizer.step()
             total_train_loss += loss.item()
