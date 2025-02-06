@@ -78,10 +78,10 @@ def plot_results(y_test, preds, metrics, learning_rate):
             frameon=True
         )
 
-    fig.suptitle(f"MLP Predictions vs Ground Truth\nLearning Rate: {learning_rate}", fontsize=16)
+    fig.suptitle(f"KAN Predictions vs Ground Truth\nLearning Rate: {learning_rate}", fontsize=16)
     
     # Save figure before showing
-    fig_name = "MLP_results.png"
+    fig_name = "KAN_results.png"
     plt.savefig(fig_name, bbox_inches='tight', dpi=300)
     plt.show()
 
@@ -105,9 +105,9 @@ def run():
     plot_results(y_test, preds, metrics, learning_rate=lr)  # Learning rate is a placeholder; retrieve dynamically if needed.
 
     # save and upload the plot to ClearML
-    fig_name = "MLP_results.png"
+    fig_name = "KAN_results.png"
     plt.savefig(fig_name)
-    task.upload_artifact(name="MLP_Plot", artifact_object=fig_name)
+    task.upload_artifact(name="KAN_Plot", artifact_object=fig_name)
 
     task.close()
 
