@@ -186,7 +186,7 @@ def trainKAN(config, logger, verbose):
 
 def main():
 
-    task, params = init_task(project_name="KAN-DS optimization", task_name="Optuna Controller")
+    task, params = init_task(project_name="KAN-DS optimization", task_name="Template Trainer")
 
     logger = task.get_logger()
     
