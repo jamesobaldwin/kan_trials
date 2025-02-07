@@ -69,7 +69,7 @@ def unpack_and_convert(train_test_data: dict):
         y_train, 
         X_test, 
         train_test_data['y_test'], 
-        train_test_data['scaler'],
+        # train_test_data['scaler'],
        )
 
 # save artifacts for use in plotting final model
@@ -142,7 +142,7 @@ def trainKAN(config, logger, verbose):
         raise ValueError(f"Unknown optimizer: {config['optimizer']}")
         
     criterion = nn.MSELoss()
-    scaler = config['scaler']
+    # scaler = config['scaler']
 
     for epoch in range(config['num_epochs']):
         
@@ -214,7 +214,7 @@ def main():
         "y_train": y_train,
         "X_test": X_test,
         "y_test": y_test,
-        "scaler": scaler,
+        # "scaler": scaler,
         "hidden_layers_1": hidden_layers_1,
         "hidden_layers_2": hidden_layers_2,
         "transition_dim": params['transition_dim'],
