@@ -203,7 +203,8 @@ def main():
     
     # retrieve training and test data
     train_test_data = retrieve_data(params["data_task_id"])
-    X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
+    # X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
+    X_train, y_train, X_test, y_test = unpack_and_convert(train_test_data)
 
     # generate the hidden layers
     hidden_layers_1, hidden_layers_2 = generate_layers(params)
