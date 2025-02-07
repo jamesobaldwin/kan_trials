@@ -167,8 +167,13 @@ def trainKAN(config, logger, verbose):
         # validate
         model.eval()
         preds = []
-        with torch.no_grad():
-            for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
+        # with torch.no_grad():
+        #     for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
+        #         pred = model(point_set.to(device))
+        #         total_test_loss += criterion(pred, target)
+        #         preds.append(pred)
+
+        for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
                 pred = model(point_set.to(device))
                 total_test_loss += criterion(pred, target)
                 preds.append(pred)
