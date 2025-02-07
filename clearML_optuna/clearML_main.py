@@ -155,7 +155,7 @@ def trainKAN(config, logger, verbose):
             # print(f"DEBUG: shape of point_set before being sent to model: {np.shape(point_set)}")
             outputs = model(point_set.to(device))
             # print(f"DEBUG: shape of outputs: {np.shape(outputs)}")
-            loss = mean_squared_error(outputs.detach().numpy(), target.to(device))
+            loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
             total_train_loss += loss.item()
@@ -167,28 +167,27 @@ def trainKAN(config, logger, verbose):
         # validate
         model.eval()
         preds = []
+        with torch.no_grad():
+            for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
+                pred = model(point_set.to(device))
+                total_test_loss += criterion(pred, target.to(device))
+                preds.append(pred)
+                        
+        # log test loss per epoch
+        avg_test_loss = total_test_loss / len(config["X_test"])
+        logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
+
+        # test_losses = []
         # with torch.no_grad():
-        #     for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
+        #     for i, (point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
         #         pred = model(point_set.to(device))
         #         pred = scaler.inverse_transform(pred.cpu().numpy().reshape(1, -1)).squeeze()
         #         preds.append(pred)
-        #         total_test_loss += mean_squared_error(pred, target)
-                        
-        # # log test loss per epoch
-        # avg_test_loss = total_test_loss / len(config["X_test"])
+        #         test_losses.append(mean_squared_error(pred, target))
+
+        # # Compute average MSE over the entire test set
+        # avg_test_loss = np.mean(test_losses)
         # logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
-
-        test_losses = []
-        with torch.no_grad():
-            for i, (point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
-                pred = model(point_set.to(device))
-                pred = scaler.inverse_transform(pred.cpu().numpy().reshape(1, -1)).squeeze()
-                preds.append(pred)
-                test_losses.append(mean_squared_error(pred, target))
-
-        # Compute average MSE over the entire test set
-        avg_test_loss = np.mean(test_losses)
-        logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
 
         if verbose and (epoch + 1) % (0.1 * config["num_epochs"]) == 0:
             print(f"Epoch [{epoch + 1}/{config['num_epochs']}], Train Loss: {avg_train_loss:.4e}, Test Loss: {avg_test_loss:.4e}")
