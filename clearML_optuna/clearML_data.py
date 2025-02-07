@@ -85,13 +85,25 @@ def generate_train_test_data(params: dict) -> dict:
     y_train = create_targets(X_train, scale=False)
     y_test = create_targets(X_test, scale=False)
 
-    # create the artifacts dictionary
+    ###################
+    # scaled data dict
+    ###################
+    # train_test_data = {
+    #     "X_train": X_train,
+    #     "y_train": y_train,
+    #     "X_test": X_test,
+    #     "y_test": y_test,
+    #     "scaler": scaler,
+    # }
+
+    ###################
+    # unscaled data dict
+    ###################
     train_test_data = {
         "X_train": X_train,
         "y_train": y_train,
         "X_test": X_test,
         "y_test": y_test,
-        "scaler": scaler,
     }
 
     return train_test_data
