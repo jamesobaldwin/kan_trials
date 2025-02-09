@@ -142,7 +142,7 @@ def trainKAN(config, logger, verbose):
         raise ValueError(f"Unknown optimizer: {config['optimizer']}")
         
     criterion = nn.MSELoss()
-    # scaler = config['scaler']
+    scaler = config['scaler']
 
     for epoch in range(config['num_epochs']):
         
@@ -170,6 +170,7 @@ def trainKAN(config, logger, verbose):
         with torch.no_grad():
             for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
                 pred = model(point_set.to(device))
+                pred = scaler.inverse_transform(pred.cpu().numpy().reshape(1, -1)).squeeze()
                 total_test_loss += mean_squared_error(pred, target)
                 preds.append(pred)
                         
@@ -203,8 +204,8 @@ def main():
     
     # retrieve training and test data
     train_test_data = retrieve_data(params["data_task_id"])
-    # X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
-    X_train, y_train, X_test, y_test = unpack_and_convert(train_test_data)
+    X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
+    # X_train, y_train, X_test, y_test = unpack_and_convert(train_test_data)
 
     # generate the hidden layers
     hidden_layers_1, hidden_layers_2 = generate_layers(params)
@@ -215,7 +216,7 @@ def main():
         "y_train": y_train,
         "X_test": X_test,
         "y_test": y_test,
-        # "scaler": scaler,
+        "scaler": scaler,
         "hidden_layers_1": hidden_layers_1,
         "hidden_layers_2": hidden_layers_2,
         "transition_dim": params['transition_dim'],
