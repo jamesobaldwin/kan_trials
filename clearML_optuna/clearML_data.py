@@ -106,7 +106,7 @@ def generate_train_test_data(params: dict) -> dict:
     #     "y_test": y_test,
     # }
 
-    # return train_test_data
+    return train_test_data
 
 def save_artifacts(task: Task, artifacts: dict):
     task.upload_artifact("train_test_data", artifacts)
