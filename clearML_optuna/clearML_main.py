@@ -210,7 +210,7 @@ def main():
     hidden_layers_1, hidden_layers_2 = generate_layers(params)
 
     config = {
-        "num_epochs": 10,
+        "num_epochs": params['num_epochs'],
         "X_train": X_train,
         "y_train": y_train,
         "X_test": X_test,
