@@ -119,7 +119,7 @@ def main():
     # store the training, test, and scalar object data in a dictionary
     train_test_data = generate_train_test_data(params)
 
-    print(train_test_data)
+    print(train_test_data['scaler'])
 
     # upload artifacts to ClearML servers
     save_artifacts(task, train_test_data)
