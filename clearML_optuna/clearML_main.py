@@ -84,13 +84,13 @@ def generate_layers(params):
     hidden_layers_1 = []
     for i in range(params['num_layers_1']):
         a = int(params.get(f'a1_{i}', 0))  # Default value if not set
-        m = int(params.get(f'm1_{i}', 0))
+        m = int(params.get(f'm1_{i}', 1))
         hidden_layers_1.append((a, m))
 
     hidden_layers_2 = []
     for i in range(params['num_layers_2']):
         a = int(params.get(f'a2_{i}', 0))  # Default value if not set
-        m = int(params.get(f'm2_{i}', 0))
+        m = int(params.get(f'm2_{i}', 1))
         hidden_layers_2.append((a, m))
 
     return hidden_layers_1, hidden_layers_2
