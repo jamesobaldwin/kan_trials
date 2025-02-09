@@ -64,11 +64,12 @@ def unpack_and_convert(train_test_data: dict):
     y_train = [torch.tensor(train_test_data['y_train'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['y_train']))]
     X_test = [torch.tensor(train_test_data['X_test'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['X_test']))]
 
-    return X_train, 
+    return (X_train, 
            y_train, 
            X_test, 
            train_test_data['y_test'], 
            # train_test_data['scaler']
+           )
 
 # save artifacts for use in plotting final model
 def save_artifacts(task: Task, preds: np.ndarray, y_test: np.ndarray, lr: float):
