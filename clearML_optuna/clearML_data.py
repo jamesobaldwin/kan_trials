@@ -81,30 +81,30 @@ def create_targets(point_sets, scale: bool=True):
 def generate_train_test_data(params: dict) -> dict:
     
     X_train, X_test = generate_train_test_sets(lower = params['lower'], upper = params['upper'], n = params['num_point_sets'])
-    scaler, y_train = create_targets(X_train)
-    # y_train = create_targets(X_train, scale=False)
+    # scaler, y_train = create_targets(X_train)
+    y_train = create_targets(X_train, scale=False)
     y_test = create_targets(X_test, scale=False)
 
     ###################
     # scaled data dict
     ###################
-    train_test_data = {
-        "X_train": X_train,
-        "y_train": y_train,
-        "X_test": X_test,
-        "y_test": y_test,
-        "scaler": scaler,
-    }
-
-    # ###################
-    # # unscaled data dict
-    # ###################
     # train_test_data = {
     #     "X_train": X_train,
     #     "y_train": y_train,
     #     "X_test": X_test,
     #     "y_test": y_test,
+    #     "scaler": scaler,
     # }
+
+    # ###################
+    # # unscaled data dict
+    # ###################
+    train_test_data = {
+        "X_train": X_train,
+        "y_train": y_train,
+        "X_test": X_test,
+        "y_test": y_test,
+    }
 
     return train_test_data
 
@@ -118,8 +118,6 @@ def main():
 
     # store the training, test, and scalar object data in a dictionary
     train_test_data = generate_train_test_data(params)
-
-    print(train_test_data['scaler'])
 
     # upload artifacts to ClearML servers
     save_artifacts(task, train_test_data)
