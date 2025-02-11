@@ -68,7 +68,7 @@ def unpack_and_convert(train_test_data: dict):
            y_train, 
            X_test, 
            train_test_data['y_test'], 
-           # train_test_data['scaler']
+           train_test_data['scaler']
            )
 
 # save artifacts for use in plotting final model
