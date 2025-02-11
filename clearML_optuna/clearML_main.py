@@ -7,8 +7,8 @@ from clearml import Task
 from kan import KAN
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
-# import warnings
-# warnings.simplefilter("ignore")
+import warnings
+warnings.simplefilter("ignore")
 
 def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     task = Task.init(project_name=project_name, task_name=task_name)
@@ -101,10 +101,10 @@ class KANModel(nn.Module):
     ):
         super(KANModel, self).__init__()
         self.layer1 = KAN(
-            width=[4] + config['hidden_layers_1'] + [ config['transition_dim'] ], grid=config['grid1'], k=3, save_act=False
+            width=[4] + config['hidden_layers_1'] + [ config['transition_dim'] ], grid=config['grid1'], k=3
         )
         self.layer2 = KAN(
-            width=[ config['transition_dim'] ] + config['hidden_layers_2'] + [3], grid=config['grid2'], k=3, save_act=False
+            width=[ config['transition_dim'] ] + config['hidden_layers_2'] + [3], grid=config['grid2'], k=3
         )
 
         self.agg_function = config['agg_function']
