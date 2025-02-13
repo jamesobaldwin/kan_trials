@@ -48,13 +48,11 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
 
 def retrieve_data(data_task_id: str) -> dict:
 
-    print(f"DEBUG: inside retrieving data...")
     # Find the task that generated the artifact
     source_task = Task.get_task(task_id=data_task_id)
     
     # Retrieve the dictionary directly from the artifact
     train_test_data = source_task.artifacts["train_test_data"].get()
-    print(f"DEBUG: train_test_data type: {type(train_test_data)}")
 
     return train_test_data
 
@@ -153,14 +151,11 @@ def trainKAN(config, logger, verbose):
         total_test_loss = 0
 
         for i, (point_set, target) in enumerate(zip(config["X_train"], config["y_train"])):
+           
             optimizer.zero_grad()
-            if i == 1 or i == 2:
-                print(f"DEBUG: print the first few elements of the first two point sets:")
-                print(point_set[:5])
+
             outputs = model(point_set.to(device))
-            if i == 1 or i == 2:
-                print(f"DEBUG: print the first two outputs:")
-                print(outputs)
+            
             loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
@@ -172,43 +167,29 @@ def trainKAN(config, logger, verbose):
 
         # validate
         model.eval()
-        preds = []
         with torch.no_grad():
             for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
-                if i == 1 or i == 2:
-                    print(f"DEBUG: print the first few elements of the first two test point sets:")
-                    print(point_set[:5])
                 pred = model(point_set.to(device))
-                if i == 1 or i == 2:
-                    print(f"DEBUG: print the first two preds:")
-                    print(pred)
                 total_test_loss += mean_squared_error(pred.cpu().numpy(), target)
-                pred = scaler.inverse_transform(pred.reshape(1, -1)).squeeze()
-                if i == 1 or i == 2:
-                    print(f"DEBUG: after rescaling:")
-                    print(pred)
-                preds.append(pred)
                         
         # log test loss per epoch
         avg_test_loss = total_test_loss / len(config["X_test"])
         logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
 
-        # test_losses = []
-        # with torch.no_grad():
-        #     for i, (point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
-        #         pred = model(point_set.to(device))
-        #         pred = scaler.inverse_transform(pred.cpu().numpy().reshape(1, -1)).squeeze()
-        #         preds.append(pred)
-        #         test_losses.append(mean_squared_error(pred, target))
-
-        # # Compute average MSE over the entire test set
-        # avg_test_loss = np.mean(test_losses)
-        # logger.report_scalar(title='mse_test_loss', series='test', iteration=epoch, value=avg_test_loss)
-
         if verbose and (epoch + 1) % (0.1 * config["num_epochs"]) == 0:
             print(f"Epoch [{epoch + 1}/{config['num_epochs']}], Train Loss: {avg_train_loss:.4e}, Test Loss: {avg_test_loss:.4e}")
     
-    return model, preds
+    return model
+
+def get_preds(model, X_test, y_test):
+    preds = []
+    model.eval()
+        with torch.no_grad():
+            for i,(point_set, target) in enumerate(zip(X_test, y_test)):
+                pred = model(point_set.to(device))
+                preds.append(pred)
+
+    return preds
 
 
 def main():
@@ -218,10 +199,8 @@ def main():
     logger = task.get_logger()
     
     # retrieve training and test data
-    print(f"DEBUG: retrieving data...")
     train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
-    # X_train, y_train, X_test, y_test = unpack_and_convert(train_test_data)
 
     # generate the hidden layers
     hidden_layers_1, hidden_layers_2 = generate_layers(params)
@@ -246,11 +225,13 @@ def main():
     }
 
     # perform the training and log the results
-    model, preds = trainKAN(
+    model = trainKAN(
         config=config,  # Pass dictionary instead of many arguments
         logger=logger,
         verbose=True
     )
+
+    preds = get_preds(model, config['X_test'], config['y_test'])
 
     save_artifacts(task, preds, config['y_test'], config['lr'])
 
