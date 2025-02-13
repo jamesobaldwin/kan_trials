@@ -83,7 +83,7 @@ def generate_train_test_data(params: dict) -> dict:
     X_train, X_test = generate_train_test_sets(lower = params['lower'], upper = params['upper'], n = params['num_point_sets'])
     scaler, y_train = create_targets(X_train)
     # y_train = create_targets(X_train, scale=False)
-    y_test = create_targets(X_test)
+    scaler, y_test = create_targets(X_test)
 
     ###################
     # scaled data dict
