@@ -184,10 +184,10 @@ def trainKAN(config, logger, verbose):
 def get_preds(model, X_test, y_test):
     preds = []
     model.eval()
-        with torch.no_grad():
-            for i,(point_set, target) in enumerate(zip(X_test, y_test)):
-                pred = model(point_set.to(device))
-                preds.append(pred)
+    with torch.no_grad():
+        for i,(point_set, target) in enumerate(zip(X_test, y_test)):
+            pred = model(point_set.to(device))
+            preds.append(pred)
 
     return preds
 
