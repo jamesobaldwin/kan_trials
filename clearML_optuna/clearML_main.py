@@ -53,6 +53,7 @@ def retrieve_data(data_task_id: str) -> dict:
     
     # Retrieve the dictionary directly from the artifact
     train_test_data = source_task.artifacts["train_test_data"].get()
+    print(f"DEBUG: train_test_data type: {type(train_test_data)}")
 
     return train_test_data
 
