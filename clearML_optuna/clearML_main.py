@@ -182,6 +182,9 @@ def trainKAN(config, logger, verbose):
     return model
 
 def get_preds(model, X_test, y_test):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     preds = []
     model.eval()
     with torch.no_grad():
