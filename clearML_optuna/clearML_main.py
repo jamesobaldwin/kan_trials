@@ -63,11 +63,12 @@ def unpack_and_convert(train_test_data: dict):
     X_train = [torch.tensor(train_test_data['X_train'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['X_train']))]
     y_train = [torch.tensor(train_test_data['y_train'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['y_train']))]
     X_test = [torch.tensor(train_test_data['X_test'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['X_test']))]
+    y_test = [torch.tensor(train_test_data['y_test'][i], dtype=torch.float32) for i in np.arange(len(train_test_data['y_test']))]
 
     return (X_train, 
            y_train, 
            X_test, 
-           train_test_data['y_test'], 
+           y_test, 
            train_test_data['scaler']
            )
 
@@ -151,9 +152,13 @@ def trainKAN(config, logger, verbose):
 
         for i, (point_set, target) in enumerate(zip(config["X_train"], config["y_train"])):
             optimizer.zero_grad()
-            # print(f"DEBUG: shape of point_set before being sent to model: {np.shape(point_set)}")
+            if i == 1 or i == 2:
+                print(f"DEBUG: print the first few elements of the first two point sets:")
+                print(point_set[:5])
             outputs = model(point_set.to(device))
-            # print(f"DEBUG: shape of outputs: {np.shape(outputs)}")
+            if i == 1 or i == 2:
+                print(f"DEBUG: print the first two outputs:")
+                print(outputs)
             loss = criterion(outputs, target.to(device))
             loss.backward()
             optimizer.step()
@@ -168,9 +173,18 @@ def trainKAN(config, logger, verbose):
         preds = []
         with torch.no_grad():
             for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
+                if i == 1 or i == 2:
+                    print(f"DEBUG: print the first few elements of the first two test point sets:")
+                    print(point_set[:5])
                 pred = model(point_set.to(device))
+                if i == 1 or i == 2:
+                    print(f"DEBUG: print the first two preds:")
+                    print(pred)
                 total_test_loss += mean_squared_error(pred.cpu().numpy(), target)
                 pred = scaler.inverse_transform(pred.reshape(1, -1)).squeeze()
+                if i == 1 or i == 2:
+                    print(f"DEBUG: after rescaling:")
+                    print(pred)
                 preds.append(pred)
                         
         # log test loss per epoch

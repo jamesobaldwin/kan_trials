@@ -44,7 +44,7 @@ def main():
     
     # 🔹 Define Arguments
     args = {
-        'template_task_id': '898badb019f04991a5068d40353397a1',  # Base experiment to optimize
+        'template_task_id': '841421a776bf4827947d22886a26d033',  # Base experiment to optimize
         'run_as_service': False,
     }
     args = task.connect(args)
@@ -53,7 +53,7 @@ def main():
     if not args['template_task_id']:
         args['template_task_id'] = Task.get_task(
             project_name="KAN-DS optimization",
-            task_name="V3 Template Trainer"  # Replace with actual task name in ClearML UI
+            task_name="V4 Template Trainer"  # Replace with actual task name in ClearML UI
         ).id
     
     # Set the execution queue for the training jobs
