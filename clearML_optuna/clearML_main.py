@@ -170,7 +170,7 @@ def trainKAN(config, logger, verbose):
         with torch.no_grad():
             for i,(point_set, target) in enumerate(zip(config['X_test'], config['y_test'])):
                 pred = model(point_set.to(device))
-                total_test_loss += mean_squared_error(pred.cpu().numpy(), target)
+                total_test_loss += criterion(pred, target)
                         
         # log test loss per epoch
         avg_test_loss = total_test_loss / len(config["X_test"])
