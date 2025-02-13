@@ -47,7 +47,8 @@ def init_task(project_name: str, task_name: str) -> tuple[Task, dict[str, any]]:
     return task, params
 
 def retrieve_data(data_task_id: str) -> dict:
-    
+
+    print(f"DEBUG: inside retrieving data...")
     # Find the task that generated the artifact
     source_task = Task.get_task(task_id=data_task_id)
     
@@ -217,6 +218,7 @@ def main():
     logger = task.get_logger()
     
     # retrieve training and test data
+    print(f"DEBUG: retrieving data...")
     train_test_data = retrieve_data(params["data_task_id"])
     X_train, y_train, X_test, y_test, scaler = unpack_and_convert(train_test_data)
     # X_train, y_train, X_test, y_test = unpack_and_convert(train_test_data)
