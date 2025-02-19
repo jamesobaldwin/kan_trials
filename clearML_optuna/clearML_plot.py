@@ -44,7 +44,7 @@ def calculate_metrics(y_test, preds):
 def plot_results(y_test, preds, metrics, learning_rate):
     """ Generate scatter plots with regression lines and metric annotations. """
     
-    fig, axs = plt.subplots(1, 3, figsize=(20, 6), sharey=False, sharex=False)
+    fig, axs = plt.subplots(1, 3, figsize=(20, 6))
     axes_labels = ['x', 'y', 'z']
 
     for i, axis in enumerate(axes_labels):

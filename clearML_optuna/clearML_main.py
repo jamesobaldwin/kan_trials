@@ -127,6 +127,8 @@ def trainKAN(config, logger, verbose):
 
     model = KANModel(config).to(device)
 
+    print(model)
+
     if config['optimizer'] == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
     elif config['optimizer'] == "AdamW":

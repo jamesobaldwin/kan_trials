@@ -96,16 +96,6 @@ def generate_train_test_data(params: dict) -> dict:
         "scaler": scaler,
     }
 
-    # ###################
-    # # unscaled data dict
-    # ###################
-    # train_test_data = {
-    #     "X_train": X_train,
-    #     "y_train": y_train,
-    #     "X_test": X_test,
-    #     "y_test": y_test,
-    # }
-
     return train_test_data
 
 def save_artifacts(task: Task, artifacts: dict):
